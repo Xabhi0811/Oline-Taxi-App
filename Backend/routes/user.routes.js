@@ -5,6 +5,7 @@ const userController = require('../controllers/user.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 
 
+
 router.post('/register',[
     body('email').isEmail().withMessage('invalid email'),
     body('fullname.firstname').isLength({ min: 3}).withMessage('first give your name proparly'),
