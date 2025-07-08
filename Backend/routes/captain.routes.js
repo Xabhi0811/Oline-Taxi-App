@@ -37,7 +37,6 @@ console.log("✅ captain.routes.js loaded");
  router.get('/profile', authMiddleware.authCaptain,captainController.getCaptainProfile)
 
 
-
  router.get('/logout', authMiddleware.authCaptain,captainController.logoutCaptain);
 
 
