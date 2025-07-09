@@ -6,9 +6,18 @@ const UserLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const [userData ,setuserData] = useState({});
+
   const submitHandler = (e) => {
     e.preventDefault();
-    console.log('Email:');
+   setuserData({
+    email: email,
+     password: password
+   })
+   console.log(userData);
+    // Reset the form fields after submission
+   setEmail('');
+    setPassword('');
   }
   return (
     <div className='p-7 h-screen flex flex-col justify-between'> 
@@ -48,7 +57,7 @@ const UserLogin = () => {
 
       </div>
       <div>
-        <button className='bg-[#111] text-white font-semibold mb-7 rounded px-4 py-2 w-full text-lg placeholder:text-base' > Sign in as captain </button>
+        <Link to='/capatain-login' className=' flex items-center justify-center bg-[#111] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg placeholder:text-base' > Sign in as captain </Link>
         
       </div>
     </div>
