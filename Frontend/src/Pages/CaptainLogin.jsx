@@ -24,7 +24,7 @@ const CaptainLogin = () => {
     
        <div className='p-7 h-screen flex flex-col justify-between'> 
            <div> 
-            <img  className='w-16 mb-10' src="https://static.vecteezy.com/system/resources/previews/027/127/451/non_2x/uber-logo-uber-icon-transparent-free-png.png" alt="" />
+            <img  className='w-20 mb-3' src="https://static.vecteezy.com/system/resources/previews/027/127/451/non_2x/uber-logo-uber-icon-transparent-free-png.png" alt="" />
             <form onSubmit={(e)=>submitHandler(e)}>
               
               <h3 className='text-lg font-medium mb-2'>what is your email</h3>
