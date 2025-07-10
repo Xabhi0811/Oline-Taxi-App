@@ -1,4 +1,4 @@
-import React from 'react'
+
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 
@@ -7,7 +7,7 @@ const CaptainLogin = () => {
    const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
     
-      const [captainData ,setcaptainData] = useState('');
+      const [captainData ,setcaptainData] = useState({});
     
       const submitHandler = (e) => {
         e.preventDefault();
@@ -15,7 +15,7 @@ const CaptainLogin = () => {
         email: email,
          password: password
        })
-       console.log(userData);
+      
         // Reset the form fields after submission
        setEmail('');
         setPassword('');

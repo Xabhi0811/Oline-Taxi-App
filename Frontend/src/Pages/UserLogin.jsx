@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 
@@ -14,7 +14,7 @@ const UserLogin = () => {
     email: email,
      password: password
    })
-   console.log(userData);
+   
     // Reset the form fields after submission
    setEmail('');
     setPassword('');
@@ -57,7 +57,7 @@ const UserLogin = () => {
 
       </div>
       <div>
-        <Link to='/capatain-login' className=' flex items-center justify-center bg-[#111] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg placeholder:text-base' > Sign in as captain </Link>
+        <Link to='/capatain-login' className=' flex items-center justify-center bg-[#10b461] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg placeholder:text-base' > Sign in as captain </Link>
         
       </div>
     </div>
