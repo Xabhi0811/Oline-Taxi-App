@@ -4,9 +4,9 @@ module.exports.createUser = async ({
     firstname,
     lastname,
     email,
-    Password
+    password
 }) => {
-    if (!firstname || !lastname || !email || !Password) {
+    if (!firstname || !lastname || !email || !password) {
         throw new Error('all fields are required');
     }
 
@@ -16,7 +16,7 @@ module.exports.createUser = async ({
             lastname
         },
         email,
-        Password
+        password
     });
 
     return user;

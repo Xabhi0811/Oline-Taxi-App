@@ -3,6 +3,10 @@ const userservice = require('../services/user.service');
 const { validationResult } = require('express-validator');
 const blacklistTokenModel = require('../models/blacklistToken.model');
 console.log("✅ blacklistToken.model.js loaded successfully");
+
+
+
+
 module.exports.registerUser = async (req, res, next) => {
     console.log("🧾 req.body:", req.body);
     const error = validationResult(req);
@@ -31,8 +35,8 @@ module.exports.registerUser = async (req, res, next) => {
         firstname: firstName,
         lastname: lastName,
         email,
-        Password: hashPassword
-    });
+        password: hashPassword
+    })
 
     const token = user.generateAuthToken();
     res.status(201).json({ token, user });
@@ -46,13 +50,13 @@ module.exports.loginUser = async (req, res, next) =>{
         return res.status(400).json({error: error.array()});
     }
 
-      const{ email, Password} = req.body;
-      const user = await userModel.findOne({ email}).select('+Password');
+      const{ email, password} = req.body;
+      const user = await userModel.findOne({ email}).select('+password');
       if(!user){
         return res.status(401).json({error: "Invalid email or password"});
       }
 
-      const isMatch = await user.comparePassword(Password);
+      const isMatch = await user.comparePassword(password);
         if(!isMatch){
             return res.status(401).json({error: "Invalid email or password"});
         }

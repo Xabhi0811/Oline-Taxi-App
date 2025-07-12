@@ -20,7 +20,7 @@ router.post('/register', [
 
 
 router.post('/login',[body('email').isEmail().withMessage('invalid email'),
-    body('Password').isLength({min:  6 }).withMessage('password must be 6 digit')],
+    body('password').isLength({min:  6 }).withMessage('password must be 6 digit')],
 
    userController.loginUser
 
