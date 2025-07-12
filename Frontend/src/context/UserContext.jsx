@@ -1,23 +1,24 @@
-import React, { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-export const userDataContext = createContext()
+// UserContext.jsx
+import React, { createContext, useState } from 'react';
 
-const UserContext = ({children}) => {
-    const [user, setUser] =useState({
-        fullName: {
-            firstName: '',
-            lastName: ''
-        },
-        email: ''
-      
-    })
+// Create the context
+export const userDataContext = createContext();
+
+// Create a provider component
+const UserProvider = ({ children }) => {
+  const [user, setUser] = useState({
+    fullName: {
+      firstName: '',
+      lastName: ''
+    },
+    email: ''
+  });
+
   return (
-    <div>
-     <userDataContext.Provider>
-        {children}
-     </userDataContext.Provider>
-    </div>
-  )
-}
+    <userDataContext.Provider value={{ user, setUser }}>
+      {children}
+    </userDataContext.Provider>
+  );
+};
 
-export default UserContext
+export default UserProvider;
