@@ -3,36 +3,33 @@ const userservice = require('../services/user.service');
 const { validationResult } = require('express-validator');
 const blacklistTokenModel = require('../models/blacklistToken.model');
 console.log("✅ blacklistToken.model.js loaded successfully");
-
 module.exports.registerUser = async (req, res, next) => {
+    console.log("🧾 req.body:", req.body);
     const error = validationResult(req);
     if (!error.isEmpty()) {
         return res.status(400).json({ error: error.array() });
     }
 
-    console.log('Request Body:', req.body); // Should show full structure
+    const { email, password } = req.body;
+    const { firstName, lastName } = req.body.fullName || {};
 
-    // ✅ Destructure exactly from req.body
-    const { email, Password } = req.body;
-    const { firstname, lastname } = req.body.fullname || {};
-    
+    console.log("Extracted:", firstName, lastName, email, password);
 
-    // ✅ Add a validation log
-    console.log('Extracted:', firstname, lastname, email, Password);
-
-    if (!firstname || !lastname || !email || !Password) {
+    // ✅ Fix variable names here
+    if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ error: "All fields are required." });
     }
-         const isUserAlready = await userModel.findOne({email});
-    if (isUserAlready) {
 
+    const isUserAlready = await userModel.findOne({ email });
+    if (isUserAlready) {
         return res.status(400).json({ error: "User already exists" });
     }
-    const hashPassword = await userModel.hashPassword(Password);
+
+    const hashPassword = await userModel.hashPassword(password);
 
     const user = await userservice.createUser({
-        firstname,
-        lastname,
+        firstname: firstName,
+        lastname: lastName,
         email,
         Password: hashPassword
     });

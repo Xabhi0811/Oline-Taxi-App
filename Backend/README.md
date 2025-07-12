@@ -98,139 +98,21 @@ curl -X POST http://localhost:4000/users/resgister \
 
 - The `Password` will be securely hashed before storing in the database.
 - On success, use the returned JWT token for authenticated requests.
+## Captain Profile
+
+### Endpoint
+
+`GET /captains/profile`
 
 ---
 
-# User Login Endpoint Documentation
+### Description
 
-## Endpoint
-
-`POST /users/login`
+Returns the authenticated captain's profile information. Requires a valid JWT token.
 
 ---
 
-## Description
-
-This endpoint allows an existing user to log in using their email and password. On successful login, a JWT authentication token and user data are returned.
-
----
-
-## Request Body
-
-Send a JSON object with the following structure:
-
-```json
-{
-  "email": "john.doe@example.com",
-  "Password": "yourpassword"
-}
-```
-
-**Notes:**
-- `email`: Required, must be a valid email address.
-- `Password`: Required, minimum 6 characters.
-
----
-
-## Responses
-
-### Success
-
-- **Status Code:** `200 OK`
-- **Body Example:**
-    ```json
-    {
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-      "user": {
-        "_id": "60f7c2b5e1b1c8a1b8e4d123",
-        "fullname": {
-          "firstname": "John",
-          "lastname": "Doe"
-        },
-        "email": "john.doe@example.com",
-        "socketID": null
-      }
-    }
-    ```
-
-### Validation Error
-
-- **Status Code:** `400 Bad Request`
-- **Body Example (invalid email):**
-    ```json
-    {
-      "error": [
-        {
-          "msg": "invalid email",
-          "param": "email",
-          "location": "body"
-        }
-      ]
-    }
-    ```
-- **Body Example (missing fields):**
-    ```json
-    {
-      "error": [
-        {
-          "msg": "password must be 6 digit",
-          "param": "Password",
-          "location": "body"
-        }
-      ]
-    }
-    ```
-
-### Authentication Error
-
-- **Status Code:** `401 Unauthorized`
-- **Body Example:**
-    ```json
-    {
-      "error": "Invalid email or password"
-    }
-    ```
-
----
-
-## Example Request
-
-```bash
-curl -X POST http://localhost:4000/users/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john.doe@example.com",
-    "Password": "yourpassword"
-  }'
-```
-
----
-
-## Notes
-
-- On success, use the returned JWT
-
- User Registration Endpoint Documentation
-
-...existing code...
-
----
-
-# User Profile Endpoint Documentation
-
-## Endpoint
-
-`GET /users/profile`
-
----
-
-## Description
-
-This endpoint returns the authenticated user's profile information. The request must include a valid JWT token in the `Authorization` header as a Bearer token or as a cookie.
-
----
-
-## Authentication
+### Authentication
 
 - **Required:** Yes (JWT token)
 
@@ -241,25 +123,32 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## Responses
+### Responses
 
-### Success
+#### Success
 
 - **Status Code:** `200 OK`
 - **Body Example:**
     ```json
     {
-      "_id": "60f7c2b5e1b1c8a1b8e4d123",
-      "fullname": {
-        "firstname": "John",
-        "lastname": "Doe"
-      },
-      "email": "john.doe@example.com",
-      "socketID": null
+      "captain": {
+        "_id": "60f7c2b5e1b1c8a1b8e4d456",
+        "fullname": {
+          "firstname": "Jane",
+          "lastname": "Smith"
+        },
+        "email": "jane.smith@example.com",
+        "vehicle": {
+          "color": "Red",
+          "plate": "ABC123",
+          "capacity": 4,
+          "vehicleType": "car"
+        }
+      }
     }
     ```
 
-### Authentication Error
+#### Authentication Error
 
 - **Status Code:** `401 Unauthorized`
 - **Body Example:**
@@ -271,11 +160,62 @@ Authorization: Bearer <jwt_token>
 
 ---
 
-## Example Request
+### Example Request
 
 ```bash
-curl -X GET http://localhost:4000/users/profile \
+curl -X GET http://localhost:4000/captains/profile \
   -H "Authorization: Bearer <jwt_token>"
 ```
 
 ---
+
+## Captain Logout
+
+### Endpoint
+
+`GET /captains/logout`
+
+---
+
+### Description
+
+Logs out the authenticated captain by blacklisting the current JWT token.
+
+---
+
+### Authentication
+
+- **Required:** Yes (JWT token)
+
+---
+
+### Responses
+
+#### Success
+
+- **Status Code:** `200 OK`
+- **Body Example:**
+    ```json
+    {
+      "message": "Logged out successfully"
+    }
+    ```
+
+#### Authentication Error
+
+- **Status Code:** `401 Unauthorized`
+- **Body Example:**
+    ```json
+    {
+      "error": "Authentication required"
+    }
+    ```
+
+---
+
+### Example Request
+
+```bash
+curl -X GET http://localhost:4000/captains/logout \
+  -H "Authorization: Bearer <jwt_token>"
+```
