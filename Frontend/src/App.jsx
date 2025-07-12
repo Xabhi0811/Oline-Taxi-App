@@ -1,11 +1,13 @@
-import React , {UserContext} from 'react'
+import React from 'react'; 
 import { Routes, Route } from 'react-router-dom'
 import Start from './Pages/Start.jsx'
 import UserLogin from './pages/UserLogin.jsx'
-import UserSignup from './pages/UserSignup.jsx'
+import UserSignup from './Pages/UserSignup.jsx'
 import CaptainLogin from './pages/CaptainLogin.jsx'
 import CaptainSignup from './pages/CaptainSignup.jsx'
 import Home from './Pages/Home.jsx'
+import { UserProvider } from './context/UserContext.jsx';
+
 
 
 const App = () => {
@@ -13,9 +15,9 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Start/>} /> 
       <Route path="/login" element={<UserLogin />} />
-      <Route path="/Signup" element={<UserSignup />} />
+      <Route path="/signup" element={<UserSignup />} />
       <Route path="/capatain-login" element={<CaptainLogin />} />
-      <Route path="/capatain-Signup" element={<CaptainSignup/>} />
+      <Route path="/capatain-signup" element={<CaptainSignup/>} />
       <Route path='/home' element={<Home/>}/>
     </Routes>
   )

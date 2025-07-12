@@ -1,24 +1,25 @@
-// UserContext.jsx
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState } from 'react'
 
-// Create the context
-export const userDataContext = createContext();
+export const UserDataContext = createContext()
 
-// Create a provider component
-const UserProvider = ({ children }) => {
-  const [user, setUser] = useState({
-    fullName: {
-      firstName: '',
-      lastName: ''
-    },
-    email: ''
-  });
 
-  return (
-    <userDataContext.Provider value={{ user, setUser }}>
-      {children}
-    </userDataContext.Provider>
-  );
-};
+const UserContext = ({ children }) => {
 
-export default UserProvider;
+    const [ user, setUser ] = useState({
+        email: '',
+        fullName: {
+            firstName: '',
+            lastName: ''
+        }
+    })
+
+    return (
+        <div>
+            <UserDataContext.Provider value={{ user, setUser }}>
+                {children}
+            </UserDataContext.Provider>
+        </div>
+    )
+}
+
+export default UserContext
