@@ -7,6 +7,7 @@ import CaptainLogin from './pages/CaptainLogin.jsx'
 import CaptainSignup from './pages/CaptainSignup.jsx'
 import Home from './Pages/Home.jsx'
 import { UserProvider } from './context/UserContext.jsx';
+import UserProtectWrapper from './Pages/UserProtectWrapper.jsx';
 
 
 
@@ -18,7 +19,7 @@ const App = () => {
       <Route path="/signup" element={<UserSignup />} />
       <Route path="/capatain-login" element={<CaptainLogin />} />
       <Route path="/capatain-signup" element={<CaptainSignup/>} />
-      <Route path='/home' element={<Home/>}/>
+      <Route path='/home' element={<UserProtectWrapper>{<Home/>}</UserProtectWrapper>}/>
     </Routes>
   )
 }
