@@ -53,7 +53,7 @@ const CaptainLogin = () => {
                 Login
               </button>
       
-               <p className='text-center'> Join a fleet ? <Link to='/capatain-Signup' className='text-blue-600'>Register as a captain </Link></p>
+               <p className='text-center'> Join a fleet ? <Link to='/captain-Signup' className='text-blue-600'>Register as a captain </Link></p>
       
             </form>
       
