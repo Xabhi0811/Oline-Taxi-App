@@ -15,7 +15,7 @@ const express = require('express');
     body('vehicle.color').isLength({min: 3}).withMessage('Color must be at least 3 characters long'),
     body('vehicle.plate').isLength({min: 3}).withMessage('Plate must be at least 3 characters long'),
     body('vehicle.capacity').isInt({gt: 0}).withMessage('Capacity must be at least 1'),
-    body('vehicle.vehicleType').isIn(['car', 'bike', 'truck']).withMessage('Vehicle type must be car, bike, or truck')],
+    body('vehicle.vehicleType').isIn(['car', 'bike', 'truck', 'auto']).withMessage('Vehicle type must be car, bike, or truck')],
 
    captainController.registerCaptain
 
