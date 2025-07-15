@@ -11,6 +11,7 @@ module.exports.registerUser = async (req, res, next) => {
     console.log("🧾 req.body:", req.body);
     const error = validationResult(req);
     if (!error.isEmpty()) {
+        console.log("❌ Validation Errors:", error.array());
         return res.status(400).json({ error: error.array() });
     }
 
@@ -87,8 +88,12 @@ module.exports.logoutUser = async (req, res, next) => {
     // Prevent duplicate error
     const isBlacklisted = await blacklistTokenModel.findOne({ token });
     if (!isBlacklisted) {
-      await blacklistTokenModel.create({ token });
-    }
+  await blacklistTokenModel.updateOne(
+    { token },
+    { $setOnInsert: { token } },
+    { upsert: true }
+  );
+}
 
     res.clearCookie('token', {
       httpOnly: true,
