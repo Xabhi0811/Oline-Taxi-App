@@ -1,9 +1,15 @@
 
 import { Link } from 'react-router-dom'
-import React, { useState } from 'react'
+import React, { use, useState } from 'react'
 import { CaptainDataContext } from '../context/CaptainContext';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const CaptainSignup = () => {
+
+ const navigate = useNavigate();
+
+
   const [email, setEmail] = useState('');
      const [password, setPassword] = useState('');
      const [firstName, setFirstName] = useState('');
@@ -20,24 +26,42 @@ const CaptainSignup = () => {
 
      const { captain , setCaptain } = React.useContext(CaptainDataContext);
    
-     const submitHandler = (e) => {
+     const submitHandler = async (e) => {
        e.preventDefault();
-      setUserData({
+       const captainData = {
        fullname:{
-         firstName: firstName,
-         lastName: lastName
+        firstname: firstName,
+         lastname: lastName
        },
        email: email,
-        password: password
+        password: password,
+        vehicle: {
+          vehicleType: vehicleType,
+          plate: vehiclePlate,
+          color: vehicleColor,
+          capacity: vehicleCapacity
+        }
  
-      })
+      }
        
+  const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/captains/register`, captainData);
+
      
+      if(response.status === 201){
+        const data = response.data 
+        setCaptain(data.captain);
+        localStorage.setItem('captainToken', data.token);
+        navigate('/captain-home');
+      }
        // Reset the form fields after submission
       setEmail('');
        setPassword('');
        setFirstName('');
        setLastName('');
+       setVehicleCapacity('');
+       setVehicleColor('');
+        setVehiclePlate('');
+        setVehicleType('');
  
     }
   return (
@@ -80,8 +104,6 @@ const CaptainSignup = () => {
           
           
           <h3 className='text-base font-medium mb-2'>Enter password</h3>
-  
-  
            <input required 
            value={password} onChange={(p)=>{
             setPassword(p.target.value)
@@ -100,6 +122,7 @@ const CaptainSignup = () => {
                   <option value="car">Car</option>
                   <option value="auto">Auto</option>
                   <option value="moto">Moto</option>
+                  <option value="truck">Truck</option>
                 </select>
 
                 <input 
