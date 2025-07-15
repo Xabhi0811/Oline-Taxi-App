@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import React, { useState } from 'react'
+import { CaptainDataContext } from '../context/CaptainContext';
 
 const CaptainSignup = () => {
   const [email, setEmail] = useState('');
@@ -8,8 +9,16 @@ const CaptainSignup = () => {
      const [firstName, setFirstName] = useState('');
      const [lastName, setLastName] = useState('');
      const [userData ,setUserData] = useState({});
+
+
+     const [vehicleType, setVehicleType] = useState('');
+     const [vehiclePlate, setVehiclePlate] = useState('');
+      const [vehicleColor, setVehicleColor] = useState('');
+      const [ vehicleCapacity, setVehicleCapacity] = useState('');
    
      
+
+     const { captain , setCaptain } = React.useContext(CaptainDataContext);
    
      const submitHandler = (e) => {
        e.preventDefault();
@@ -79,10 +88,55 @@ const CaptainSignup = () => {
            }}
   
            className='bg-[#eeeeee] mb-6 rounded px-4 py-2 border w-full text-base placeholder:text-sm' type="password" placeholder='password'/>
+              <h3 className='text-base font-medium mb-2'>Vehicle Information</h3>
+              <div className='flex gap-4 mb-6'>
+                <select 
+                  required 
+                  className='bg-[#eeeeee] w-1/2 rounded px-4 py-2 border text-base placeholder:text-sm' 
+                  value={vehicleType} 
+                  onChange={(e) => setVehicleType(e.target.value)}
+                >
+                  <option value="" disabled>Select vehicle type</option>
+                  <option value="car">Car</option>
+                  <option value="auto">Auto</option>
+                  <option value="moto">Moto</option>
+                </select>
+
+                <input 
+                  required 
+                  className='bg-[#eeeeee] w-1/2 rounded px-4 py-2 border text-base placeholder:text-sm' 
+                  type="text" 
+                  placeholder='Vehicle plate number' 
+                  value={vehiclePlate} 
+                  onChange={(e) => setVehiclePlate(e.target.value)}
+                />
+              </div>
+
+              <div className='flex gap-4 mb-6'>
+                <input 
+                  required 
+                  className='bg-[#eeeeee] w-1/2 rounded px-4 py-2 border text-base placeholder:text-sm' 
+                  type="text" 
+                  placeholder='Vehicle color' 
+                  value={vehicleColor} 
+                  onChange={(e) => setVehicleColor(e.target.value)}
+                />
+
+                <input 
+                  required 
+                  className='bg-[#eeeeee] w-1/2 rounded px-4 py-2 border text-base placeholder:text-sm' 
+                  type="number" 
+                  placeholder='Vehicle capacity' 
+                  value={vehicleCapacity} 
+                  onChange={(e) => setVehicleCapacity(e.target.value)}
+                />
+              </div>
+          
+
            
           <button 
           className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg placeholder:text-base'>
-            Login
+            Create Captain Account
           </button>
   
            <p className='text-center'> Already have a account ? <Link to='/capatain-login' className='text-blue-600'>Login here </Link></p>
