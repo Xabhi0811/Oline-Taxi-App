@@ -18,18 +18,24 @@ router.post('/register', [
         .withMessage('Password must be at least 6 characters'),
 ], userController.registerUser);
 
+router.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('invalid email'),
+    body('password').isLength({ min: 6 }).withMessage('password must be 6 digit')
+  ],
+  userController.loginUser
+);
 
-router.post('/login',[body('email').isEmail().withMessage('invalid email'),
-    body('password').isLength({min:  6 }).withMessage('password must be 6 digit')],
+console.log("✅ authMiddleware.authUser type:", typeof authMiddleware.authUser); 
+console.log("✅ userController.getUserProfile type:", typeof userController.getUserProfile);
 
-   userController.loginUser
-
-)
-
-router.get('/profile',authMiddleware.authUser,userController.getUserProfile)
+router.get('/profile', authMiddleware.authUser, userController.getUserProfile);
 
 
-router.get('/logout', authMiddleware.authUser, userController.logoutUser)
+router.post('/logout', authMiddleware.authUser,userController.logoutUser);
+
+
 
 
 

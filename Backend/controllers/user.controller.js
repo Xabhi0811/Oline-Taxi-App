@@ -71,17 +71,34 @@ module.exports.loginUser = async (req, res, next) =>{
 
 }
 
+module.exports.getUserProfile = async (req, res) => {
+  res.status(200).json(req.user);
+};
 
-module.exports.getUserProfile = async( req, res, next) =>{
-    res.status(200).json(req.user);
-  
-}
 
-module.exports.logoutUser = async (req, res, next) =>{
-    res.clearCookie('token');
+module.exports.logoutUser = async (req, res, next) => {
+  try {
     const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
 
-    await blacklistTokenModel.create({ token });
+    if (!token) {
+      return res.status(400).json({ message: 'Logout failed: No token provided' });
+    }
 
-    res.status(200).json({ message: "Logout successful" });
-}
+    // Prevent duplicate error
+    const isBlacklisted = await blacklistTokenModel.findOne({ token });
+    if (!isBlacklisted) {
+      await blacklistTokenModel.create({ token });
+    }
+
+    res.clearCookie('token', {
+      httpOnly: true,
+      sameSite: 'Lax',
+      secure: false,
+    });
+
+    return res.status(200).json({ message: 'Logout successful' });
+  } catch (error) {
+    console.error('Logout Error:', error.message);
+    return res.status(500).json({ message: 'Logout failed', error: error.message });
+  }
+};
