@@ -7,7 +7,7 @@ const CaptainLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { captain, setCaptain } = useContext(CaptainDataContext);
+  const { captain, setCaptain } = React.useContext(CaptainDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
