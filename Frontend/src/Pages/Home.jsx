@@ -2,8 +2,13 @@ import React from 'react'
 import { useState } from 'react'
 import { useLayoutEffect } from 'react';
 
+
+
+
+
 import gsap from 'gsap'
 import 'remixicon/fonts/remixicon.css'
+import LocationSearchPanel from '../componets/LocationSearchPanel';
 
 const Home = () => {
     const [pickup , setPickup ] = useState('')
@@ -87,7 +92,7 @@ useLayoutEffect(() => {
 
         </form></div>
         <div  ref={panelRef} className="h-0 bg-white">
-         <LocationSearchPanel />
+        <LocationSearchPanel/>
         </div>
       </div>
     </div>
