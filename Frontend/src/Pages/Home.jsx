@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
-import { useGSAP } from 'react-gsap';
+import { useLayoutEffect } from 'react';
+
 import gsap from 'gsap'
 import 'remixicon/fonts/remixicon.css'
 
@@ -14,31 +15,28 @@ const Home = () => {
     e.preventDefault()
   }
 
+useLayoutEffect(() => {
+  if (panelOpen) {
+    gsap.to(panelRef.current, {
+      height: '70%',
+      padding: 24,
+    });
 
-  useGSAP(function(){
-    if(panelOpen){
-      
-    gsap.to(panelRef.current,{
-
-    height: '70%',
-     padding: 24
-  })
-    
     gsap.to(panelCloseRef.current, {
-      opacity: 1
-    })
-   } else{
-      
-    gsap.to(panelRef.current,{
+      opacity: 1,
+    });
+  } else {
+    gsap.to(panelRef.current, {
+      height: '0%',
+      padding: 0,
+    });
 
-    height: '0%'
-    })
-     gsap.to(panelCloseRef.current,{
-      opacity: 0
-     })
+    gsap.to(panelCloseRef.current, {
+      opacity: 0,
+    });
   }
-  },[panelOpen])
-  
+}, [panelOpen]);
+
   return (
     <div>
       <div className="h-screen relative">
