@@ -7,6 +7,7 @@ import LocationSearchPanel from '../componets/LocationSearchPanel';
 import VehiclePanel from '../componets/VehiclePanel';
 import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
+import WaitingForDriver from '../componets/WaitingForDriver';
 
 const Home = () => {
     const [pickup , setPickup ] = useState('')
@@ -20,6 +21,8 @@ const Home = () => {
   const confirmRidePanelRef = React.useRef(null)
   const [vehicleFound, setVehicleFound] = useState(false)
   const vehicleFoundRef = React.useRef(null)
+  const [waitingForDriver , setWaitingForDriver] = useState(false)
+  const waitingForDriverRef = React.useRef(null)
 
 
   const SubmitHandler = (e) => {
@@ -88,6 +91,17 @@ useLayoutEffect(() => {
       }
  }, [vehicleFound])
 
+ useLayoutEffect(function(){
+      if(waitingForDriver){
+        gsap.to(waitingForDriverRef.current,{
+          transform: 'translateY(0)'
+        })
+      }else{
+        gsap.to(waitingForDriverRef.current,{
+          transform: 'translateY(100%)'
+        })
+      }
+ }, [waitingForDriver])
 
 
 
@@ -158,7 +172,13 @@ useLayoutEffect(() => {
 
 
      <div ref={vehicleFoundRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"> 
-       <LookingForDriver />
+       <LookingForDriver setVehicleFound={setVehicleFound} />
+      
+    </div>
+      
+
+      <div className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"> 
+       <WaitingForDriver/>
       
     </div>
 

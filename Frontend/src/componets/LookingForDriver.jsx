@@ -4,7 +4,7 @@ const LookingForDriver = (props) => {
   return (
     <div>
       <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
-        props.setConfirmRidePanel(false)
+        props.setVehicleFound(false)
        }}><i className=" text-3xl text-gray-200 ri-arrow-down-s-line"></i></h5>
        <h3 className='text-xl font-semibold mb-5 '> Looking for a Driver </h3>
       
