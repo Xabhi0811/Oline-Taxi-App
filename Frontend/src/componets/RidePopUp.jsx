@@ -4,7 +4,7 @@ const RidePopUp = () => {
   return (
     <div>
       <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
-        props.setConfirmRidePanel(false)
+       
        }}><i className=" text-3xl text-gray-200 ri-arrow-down-s-line"></i></h5>
        <h3 className='text-xl font-semibold mb-5 '> New Ride Available ! </h3>
        <div className=" flex items-center justify-between mt-4 p-3 bg-yellow-400 rounded-lg ">
