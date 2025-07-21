@@ -5,7 +5,7 @@ const CaptainDetails = () => {
     <div>
        <div className='flex items-center justify-between'>
         <div className='flex items-center justify-start gap-4'>
-          <img className=' h-10 w-10 rounded-full object-cover' src='https://live.staticflickr.com/7160/6410037157_8a32776d93_b.jpg' alt='driver'/>
+          <img className=' h-10 w-10 rounded-full object-cover' src='https://th.bing.com/th/id/OIP.Z2_5btI6r--zidbP0gH-MQHaKL?w=140&h=193&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3' alt='driver'/>
           <h4 className='text-lg font-medium'>Abhishek Singh Chauhan</h4>
         </div>
         <div className='flex justify-center gap-5 items-start'>
