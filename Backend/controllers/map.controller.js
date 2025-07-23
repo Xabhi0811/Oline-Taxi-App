@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 
  module.exports.getCoordinates = async (req, res) => {
     const { address } = req.query;
+    console.log("Received address:", address);
 
     if (!address) {
         return res.status(400).json({ error: 'Address is required' });
@@ -19,4 +20,33 @@ const { validationResult } = require('express-validator');
         res.status(500).json({ error: 'Internal server error' });
     }           
 }
+
+
+ module.exports.getDistanceTime = async (req, res) => {
+
+    try{
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { origin, destination } = req.query;
+        console.log("Origin:", origin, "Destination:", destination);
+
+        if (!origin || !destination) {
+            return res.status(400).json({ error: 'Origin and destination are required' });
+        }
+
+        const distanceTime = await mapService.getDistanceTime(origin, destination);
+        res.json(distanceTime);
+
+    } catch
+    (error) {
+        console.error('Error fetching distance and time:', error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+ }
+
+
 console.log("✅ map.controller.js loaded");
