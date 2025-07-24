@@ -47,7 +47,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
         }
 
      }catch(err){
-        console.err(err)
+        console.error(err)
         throw err;
      
     }

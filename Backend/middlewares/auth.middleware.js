@@ -27,8 +27,7 @@ module.exports.authUser = async (req, res, next) => {
 
     next();
   } catch (err) {
-  console.error(err); // Log the actual error to see where it's from
-
+  
     return res.status(401).json({ message: 'Unauthorized access: Invalid or expired token' });
   }
 };
