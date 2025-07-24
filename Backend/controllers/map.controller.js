@@ -49,4 +49,76 @@ const { validationResult } = require('express-validator');
  }
 
 
+ module.exports.getAutoCompleteSuggestions = async (req, res) => {
+      try{
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { input } = req.query;
+        console.log("Input for suggestions:", input);
+
+        if (!input) {
+            return res.status(400).json({ error: 'Input is required for autocomplete suggestions' });
+        }
+
+        const suggestions = await mapService.getAutoCompleteSuggestions(input);
+        res.json(suggestions);
+
+
+      } catch (error) {
+        console.error('Error fetching autocomplete suggestions:', error.message);
+        res.status(500).json({ error: 'Internal server error' }); 
+
+
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 console.log("✅ map.controller.js loaded");
