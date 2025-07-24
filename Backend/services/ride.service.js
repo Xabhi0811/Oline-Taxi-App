@@ -1,46 +1,60 @@
-const MapService = require('../services/map.service'); // assuming MapService is defined
-// You may need to change this import based on your structure
+const rideModule = require('../models/ride.module');
+const MapService = require('../services/map.service'); // assuming you have this service
 
-async function getFare(pickup, destination, vehicleType = 'auto') {
+// Calculate fare for all vehicle types
+async function getFare(pickup, destination) {
     if (!pickup || !destination) {
         throw new Error('Pickup and destination are required');
     }
 
-    const distanceTime = await MapService.getDistanceTime(pickup, destination);
+    const distanceTime = await MapService.getDistanceTime(pickup, destination); // Make sure this returns { distance, time }
+    
+    const baseFare = {
+        auto: 20,
+        car: 50,
+        bike: 10
+    };
 
-    const distanceInKm = distanceTime.distance / 1000; // assuming distance is in meters
-    const durationInMin = distanceTime.duration / 60; // assuming duration is in seconds
+    const perKmRate = {
+        auto: 10,
+        car: 20,
+        bike: 5
+    };
 
-    let fare = 0;
+    const perMinuteRate = {
+        auto: 1,
+        car: 2,
+        bike: 0.5
+    };
 
-    if (vehicleType === 'auto') {
-        const baseFare = 30;
-        const perKmFare = 12;
-        const perMinFare = 1;
+    const { distance, time } = distanceTime; // distance in km, time in minutes
 
-        if (distanceInKm <= 2) {
-            fare = baseFare;
-        } else {
-            fare = baseFare + (distanceInKm - 2) * perKmFare;
-        }
+    const fare = {
+        auto: baseFare.auto + (distance * perKmRate.auto) + (time * perMinuteRate.auto),
+        car: baseFare.car + (distance * perKmRate.car) + (time * perMinuteRate.car),
+        bike: baseFare.bike + (distance * perKmRate.bike) + (time * perMinuteRate.bike)
+    };
 
-        fare += durationInMin * perMinFare;
+    return fare;
+}
 
-    } else if (vehicleType === 'moto') {
-        const baseFare = 20;
-        const perKmFare = 8;
-        const perMinFare = 0.5;
-
-        if (distanceInKm <= 2) {
-            fare = baseFare;
-        } else {
-            fare = baseFare + (distanceInKm - 2) * perKmFare;
-        }
-
-        fare += durationInMin * perMinFare;
-    } else {
-        throw new Error('Invalid vehicle type. Supported: auto, moto');
+// Create a ride
+module.exports.createRide = async ({
+    user, pickup, destination, vehicleType
+}) => {
+    if (!user || !pickup || !destination || !vehicleType) {
+        throw new Error('All fields are required');
     }
 
-    return Math.round(fare); // optional rounding
-}
+    const fare = await getFare(pickup, destination); // ✅ added missing `await`
+
+    const ride = await rideModule.create({ // ✅ added `await`
+        user,
+        pickup,
+        destination,
+        vehicleType: vehicleType, // optional: you can store the type
+        fare: fare[vehicleType]
+    });
+
+    return ride;
+};
