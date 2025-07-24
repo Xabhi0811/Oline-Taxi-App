@@ -37,6 +37,30 @@ async function getFare(pickup, destination) {
 
     return fare;
 }
+  function getOtp(num){
+function generateOtp(num){
+    const otp = crypto.randomInt(Math.pow(10, num-1), Math.pow(10,num)).toString();
+    return otp;
+}
+return generateOtp(num)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Create a ride
 module.exports.createRide = async ({
@@ -52,7 +76,8 @@ module.exports.createRide = async ({
         user,
         pickup,
         destination,
-        vehicleType: vehicleType, // optional: you can store the type
+        vehicleType: vehicleType,
+        Otp: getOtp(6),// optional: you can store the type
         fare: fare[vehicleType]
     });
 
