@@ -1,5 +1,6 @@
 const rideModule = require('../models/ride.module');
-const MapService = require('../services/map.service'); // assuming you have this service
+const MapService = require('../services/map.service'); 
+const crypto = require('crypto');    // assuming you have this service
 
 // Calculate fare for all vehicle types
 async function getFare(pickup, destination) {
@@ -27,13 +28,16 @@ async function getFare(pickup, destination) {
         bike: 0.5
     };
 
-    const { distance, time } = distanceTime; // distance in km, time in minutes
+   // const { distance, time } = distanceTime; // distance in km, time in minutes
 
+    
     const fare = {
-        auto: baseFare.auto + (distance * perKmRate.auto) + (time * perMinuteRate.auto),
-        car: baseFare.car + (distance * perKmRate.car) + (time * perMinuteRate.car),
-        bike: baseFare.bike + (distance * perKmRate.bike) + (time * perMinuteRate.bike)
-    };
+    auto: baseFare.auto + ((distanceTime.distance.value / 1000) * perKmRate.auto) + ((distanceTime.duration.value / 60) * perMinuteRate.auto),
+    car:  baseFare.car  + ((distanceTime.distance.value / 1000) * perKmRate.car)  + ((distanceTime.duration.value / 60) * perMinuteRate.car),
+    bike: baseFare.bike + ((distanceTime.distance.value / 1000) * perKmRate.bike) + ((distanceTime.duration.value / 60) * perMinuteRate.bike),
+};
+
+    
 
     return fare;
 }
@@ -43,22 +47,6 @@ function generateOtp(num){
     return otp;
 }
 return generateOtp(num)}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -77,7 +65,7 @@ module.exports.createRide = async ({
         pickup,
         destination,
         vehicleType: vehicleType,
-        Otp: getOtp(6),// optional: you can store the type
+       Otp: getOtp(6), // optional: you can store the type
         fare: fare[vehicleType]
     });
 
