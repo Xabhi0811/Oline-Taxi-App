@@ -25,34 +25,44 @@ module.exports.getAddressCoordinates = async (address) => {
     }
 };
 
-
 module.exports.getDistanceTime = async (origin, destination) => {
     if (!origin || !destination) {
         throw new Error('Origin and destination are required');
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API; // Add your key in a .env file
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&key=${apiKey}`;   
-     try {
-        const response = await axios.get(url)
-        if(response.data.status !== 'OK') {
-            
-            if(response.data.rows[0].elements[0].status === 'ZERO_RESULTS') {
-                throw new Error('No route found between the origin and destination');
-            }
+    const apiKey = process.env.GOOGLE_MAPS_API;
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
 
-            return response.data.rows[0].elements[0];
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
+
+        // Log the entire response (for debugging)
+        console.log("Google Distance Matrix API response:", JSON.stringify(data, null, 2));
+
+        if (
+            data.status === 'OK' &&
+            data.rows &&
+            data.rows.length > 0 &&
+            data.rows[0].elements &&
+            data.rows[0].elements.length > 0 &&
+            data.rows[0].elements[0].status === 'OK'
+        ) {
+            const element = data.rows[0].elements[0];
+
+            return {
+                distance: element.distance.value,   // in meters
+                duration: element.duration.value    // in seconds
+            };
         } else {
-            throw new Error(`Distance Matrix API error: ${response.data.status}`);
+            const errorStatus = data.rows?.[0]?.elements?.[0]?.status || data.status;
+            throw new Error(`No valid route found or invalid API response: ${errorStatus}`);
         }
-
-     }catch(err){
-        console.error(err)
+    } catch (err) {
+        console.error('Error in getDistanceTime:', err.message);
         throw err;
-     
     }
-    }
-
+};
 
 
     module.exports.getAutoCompleteSuggestions = async (input) => {
