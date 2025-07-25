@@ -75,50 +75,7 @@ const { validationResult } = require('express-validator');
       }
 
 
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 console.log("✅ map.controller.js loaded");

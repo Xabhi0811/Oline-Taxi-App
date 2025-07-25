@@ -55,6 +55,12 @@
         type: String,
     },
 
+    Otp:{
+        type: String,
+        select: false,
+        require: true,
+    },
+
 })
 
 
