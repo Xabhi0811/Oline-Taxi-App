@@ -23,7 +23,7 @@ router.get(
  )
 
   router.get('/get-suggestions',
-    query('input').isString().isLength({min:3}).withMessage('Input must be at least 3 characters long'),
+    query('input').isString(),
     authMiddleware.authUser,mapController.getAutoCompleteSuggestions
   )
 

@@ -1,7 +1,7 @@
- const mapService = require('../services/map.service');
+const mapService = require('../services/map.service');
 const { validationResult } = require('express-validator');
 
- module.exports.getCoordinates = async (req, res) => {
+module.exports.getCoordinates = async (req, res) => {
     const { address } = req.query;
     console.log("Received address:", address);
 
@@ -18,14 +18,12 @@ const { validationResult } = require('express-validator');
     } catch (error) {
         console.error('Error fetching coordinates:', error.message);
         res.status(500).json({ error: 'Internal server error' });
-    }           
-}
+    }
+};
 
 
- module.exports.getDistanceTime = async (req, res) => {
-
-    try{
-
+module.exports.getDistanceTime = async (req, res) => {
+    try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -41,16 +39,15 @@ const { validationResult } = require('express-validator');
         const distanceTime = await mapService.getDistanceTime(origin, destination);
         res.json(distanceTime);
 
-    } catch
-    (error) {
+    } catch (error) {
         console.error('Error fetching distance and time:', error.message);
         res.status(500).json({ error: 'Internal server error' });
     }
- }
+};
 
 
- module.exports.getAutoCompleteSuggestions = async (req, res) => {
-      try{
+module.exports.getAutoCompleteSuggestions = async (req, res) => {
+    try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ errors: errors.array() });
@@ -64,18 +61,13 @@ const { validationResult } = require('express-validator');
         }
 
         const suggestions = await mapService.getAutoCompleteSuggestions(input);
-        res.json(suggestions);
+        console.log("Suggestions from API:", suggestions); // ✅ Moved inside try block
+        res.json({ suggestions });
 
-
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching autocomplete suggestions:', error.message);
-        res.status(500).json({ error: 'Internal server error' }); 
-
-
-      }
-
-
-}
-
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 console.log("✅ map.controller.js loaded");
