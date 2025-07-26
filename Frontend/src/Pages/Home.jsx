@@ -160,6 +160,13 @@ useLayoutEffect(() => {
       }
  }, [waitingForDriver])
 
+ function findTrip(){
+   setVehiclePanel(true)
+   setPanelOpen(false)
+ }
+
+
+
 
 
 
@@ -217,7 +224,10 @@ useLayoutEffect(() => {
           />
  
 
-        </form></div>
+        </form>
+        <button onClick={findTrip} className='bg-black text-white px-4 rounded-lg mt-3 h-10 w-full'>Find Trip </button>
+        
+        </div>
         <div  ref={panelRef} className="h-0 bg-white">
         <LocationSearchPanel 
           locations={locationSuggestions} 
