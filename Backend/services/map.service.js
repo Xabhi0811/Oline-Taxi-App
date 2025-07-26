@@ -26,43 +26,41 @@ module.exports.getAddressCoordinates = async (address) => {
 };
 
 module.exports.getDistanceTime = async (origin, destination) => {
-    if (!origin || !destination) {
-        throw new Error('Origin and destination are required');
+  if (!origin || !destination) {
+    throw new Error("Origin and destination are required");
+  }
+
+  const apiKey = process.env.GOOGLE_MAPS_API;
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+
+  try {
+    const response = await axios.get(url);
+    const data = response.data;
+
+    console.log("📦 Google API response:", JSON.stringify(data, null, 2));
+
+    const element = data?.rows?.[0]?.elements?.[0];
+
+    // ✅ Handle ZERO_RESULTS gracefully
+    if (data.status === 'OK') {
+      if (element?.status === 'OK') {
+        return {
+          distance: element.distance,
+          duration: element.duration
+        };
+      } else if (element?.status === 'ZERO_RESULTS') {
+        console.warn("⚠️ No route found between origin and destination.");
+        return null; // Signal that no route could be found
+      }
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API;
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
+    console.error("❌ API status issue:", element?.status, data.status);
+    throw new Error(`Google Maps API failed: ${element?.status || 'Invalid response'}`);
 
-    try {
-        const response = await axios.get(url);
-        const data = response.data;
-
-        // Log the entire response (for debugging)
-        console.log("Google Distance Matrix API response:", JSON.stringify(data, null, 2));
-
-        if (
-            data.status === 'OK' &&
-            data.rows &&
-            data.rows.length > 0 &&
-            data.rows[0].elements &&
-            data.rows[0].elements.length > 0 &&
-            data.rows[0].elements[0].status === 'OK'
-        ) {
-            const element = data.rows[0].elements[0];
-
-            return {
-                    distance: { text: '325 km', value: 325000 },
-                    duration: { text: '5 hours 20 mins', value: 19200 }
-                };
-
-        } else {
-            const errorStatus = data.rows?.[0]?.elements?.[0]?.status || data.status;
-            throw new Error(`No valid route found or invalid API response: ${errorStatus}`);
-        }
-    } catch (err) {
-        console.error('Error in getDistanceTime:', err.message);
-        throw err;
-    }
+  } catch (error) {
+    console.error("🚨 Google Maps API error:", error.message);
+    throw error;
+  }
 };
 
 

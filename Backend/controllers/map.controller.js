@@ -1,4 +1,4 @@
-const mapService = require('../services/map.service');
+const MapService = require('../services/map.service');
 const { validationResult } = require('express-validator');
 
 module.exports.getCoordinates = async (req, res) => {
@@ -10,7 +10,7 @@ module.exports.getCoordinates = async (req, res) => {
     }
 
     try {
-        const coordinates = await mapService.getAddressCoordinates(address);
+        const coordinates = await MapService.getAddressCoordinates(address);
         if (!coordinates) {
             return res.status(404).json({ error: 'Coordinates not found for the given address' });
         }
@@ -36,7 +36,7 @@ module.exports.getDistanceTime = async (req, res) => {
             return res.status(400).json({ error: 'Origin and destination are required' });
         }
 
-        const distanceTime = await mapService.getDistanceTime(origin, destination);
+        const distanceTime = await MapService.getDistanceTime(origin, destination);
         res.json(distanceTime);
 
     } catch (error) {
@@ -60,7 +60,7 @@ module.exports.getAutoCompleteSuggestions = async (req, res) => {
             return res.status(400).json({ error: 'Input is required for autocomplete suggestions' });
         }
 
-        const suggestions = await mapService.getAutoCompleteSuggestions(input);
+        const suggestions = await MapService.getAutoCompleteSuggestions(input);
         console.log("Suggestions from API:", suggestions); // ✅ Moved inside try block
         res.json({ suggestions });
 
