@@ -3,11 +3,12 @@ import { useState } from 'react'
 import { useLayoutEffect } from 'react';
 import gsap from 'gsap'
 import 'remixicon/fonts/remixicon.css'
-import LocationSearchPanel from '../componets/LocationSearchPanel';
+import LocationSearchPanel from '../componets/LocationSearchPanel'; 
 import VehiclePanel from '../componets/VehiclePanel';
 import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
 import WaitingForDriver from '../componets/WaitingForDriver';
+import axios from 'axios'
 
 const Home = () => {
     const [pickup , setPickup ] = useState('')
@@ -23,7 +24,63 @@ const Home = () => {
   const vehicleFoundRef = React.useRef(null)
   const [waitingForDriver , setWaitingForDriver] = useState(false)
   const waitingForDriverRef = React.useRef(null)
+  // New state for suggestions and active field
+  const [locationSuggestions, setLocationSuggestions] = useState([])
+  const [activeField, setActiveField] = useState(null) // 'pickup' or 'destination'
 
+  // Fetch location suggestions from backend
+  const fetchSuggestions = async (query) => {
+  if (!query) {
+    setLocationSuggestions([]);
+    return;
+  }
+  try {
+    const token = localStorage.getItem('token'); // ✅ fetch token here
+    const encodedQuery = encodeURIComponent(query);
+
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL}/map/get-suggestions?input=${encodedQuery}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // ✅ attach token
+        },
+      }
+    );
+    console.log("Suggestions response:", res.data);
+
+    setLocationSuggestions(res.data.suggestions || []); // ✅ show results
+  } catch (err) {
+    console.error('Error fetching suggestions:', err.response?.data || err.message); // ✅ log the error
+    setLocationSuggestions([]);
+  }
+};
+
+  // Fetch suggestions when pickup or destination changes and panel is open
+  React.useEffect(() => {
+    if (panelOpen && activeField === 'pickup' && pickup) {
+      fetchSuggestions(pickup);
+    } else if (panelOpen && activeField === 'destination' && destination) {
+      fetchSuggestions(destination);
+    } else {
+      setLocationSuggestions([]);
+    }
+  }, [pickup, destination, panelOpen, activeField]);
+
+  const handleInputClick = (field) => {
+    setPanelOpen(true);
+    setActiveField(field);
+  };
+
+  const handleSelectLocation = (location) => {
+    if (activeField === 'pickup') {
+      setPickup(location);
+    } else if (activeField === 'destination') {
+      setDestination(location);
+    }
+    setPanelOpen(false);
+    setActiveField(null);
+    setLocationSuggestions([]);
+  };
 
   const SubmitHandler = (e) => {
     e.preventDefault()
@@ -131,32 +188,41 @@ useLayoutEffect(() => {
           <div className="line absolute h-16 w-1 top-[45%] left-10 bg-gray-900 rounded-full"></div>
          
           <input
-           /*  logic up down wla */
-           onClick={()=>{
-            setPanelOpen(true)
-           }}
+            onClick={() => handleInputClick('pickup')}
+            value={pickup}
+            onChange={(e) => {
+              setPickup(e.target.value);
+              if (panelOpen && activeField === 'pickup') {
+                fetchSuggestions(e.target.value);
+              }
+            }}
+            type="text" placeholder='Add pick-up location '
+            className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-5'
+            autoComplete="off"
+          />
 
-           value={pickup} onChange={(e)=>setPickup(e.target.value)}
-           type="text" placeholder='Add pick-up location ' 
-           className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-5'
-            />
-
-
-          <input  
-          onClick={()=>{
-            setPanelOpen(true)
-           }}
-
-          value={destination} onChange={(e)=>setDestination(e.target.value)}
-          required
-           type="text" placeholder='Enter your destination' 
-          className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-3' 
+          <input
+            onClick={() => handleInputClick('destination')}
+            value={destination}
+            onChange={(e) => {
+              setDestination(e.target.value);
+              if (panelOpen && activeField === 'destination') {
+                fetchSuggestions(e.target.value);
+              }
+            }}
+            required
+            type="text" placeholder='Enter your destination'
+            className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-3'
+            autoComplete="off"
           />
  
 
         </form></div>
         <div  ref={panelRef} className="h-0 bg-white">
-        <LocationSearchPanel setPanelOpen={setPanelOpen} setVehiclePanel={setVehiclePanel}/>
+        <LocationSearchPanel 
+          locations={locationSuggestions} 
+          onSelectLocation={handleSelectLocation}
+        />
         </div>
       </div>
      
