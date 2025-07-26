@@ -1,6 +1,6 @@
  const express = require ('express')
  const router = express.Router();
- const {body} = require('express-validator')
+ const {body , query} = require('express-validator')
  const rideController = require ('../controllers/ride.controller')
  const authMiddleware = require('../middlewares/auth.middleware')
 
@@ -15,6 +15,15 @@
 
  )
 
+
+
+
+ router.get('/get-fare',
+   authMiddleware.authUser,
+   query('pickup').isString(),
+   query('destination').isString(),
+   rideController.getFare
+  
+  )
+
  module.exports = router;
-
-
