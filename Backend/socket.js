@@ -14,37 +14,59 @@ function initializeSocket(server) {
     });
 
     io.on('connection', (socket) => {
-        console.log('Socket connected:', socket.id);
+        console.log('[Socket] New connection:', socket.id);
 
-        // Handle custom 'json' event
         socket.on('json', async (data) => {
-             console.log('Received json event:', data);
             const { userId, userType } = data;
 
-            if (userType === 'user') {
-                await userModel.findByIdAndUpdate(userId, {
-                    socketId: socket.id
-                });
-            } else if (userType === 'captain') {
-                await captainModel.findByIdAndUpdate(userId, {
-                    socketID: socket.id
-                });
+            console.log(`[Socket] Received json: userType=${userType}, userId=${userId}, socketId=${socket.id}`);
+
+            try {
+                if (userType === 'user') {
+                    const updatedUser = await userModel.findByIdAndUpdate(
+                        userId,
+                        { socketID: socket.id },
+                        { new: true }
+                    );
+                    console.log('[Socket] Updated user:', updatedUser);
+                } else if (userType === 'captain') {
+                    const updatedCaptain = await captainModel.findByIdAndUpdate(
+                        userId,
+                        { socketId: socket.id },
+                        { new: true }
+                    );
+                    console.log('[Socket] Updated captain:', updatedCaptain);
+                } else {
+                    console.warn('[Socket] Unknown userType:', userType);
+                }
+            } catch (err) {
+                console.error('[Socket] Error updating socketId in DB:', err);
             }
         });
 
         connectedSockets.set(socket.id, socket);
 
-        // Clean up on disconnect
         socket.on('disconnect', async () => {
-            console.log(`Client disconnected: ${socket.id}`);
+            console.log(`[Socket] Disconnected: ${socket.id}`);
             connectedSockets.delete(socket.id);
 
-            // Optional: also remove from DB
-            await userModel.findOneAndUpdate({ socketID: socket.id }, { socketID: null });
-            await captainModel.findOneAndUpdate({ socketID: socket.id }, { socketID: null });
+            try {
+                const userResult = await userModel.findOneAndUpdate(
+                    { socketID: socket.id },
+                    { socketID: null }
+                );
+                const captainResult = await captainModel.findOneAndUpdate(
+                    { socketId: socket.id },
+                    { socketId: null }
+                );
+
+                console.log('[Socket] Cleaned up user socketID:', userResult !== null);
+                console.log('[Socket] Cleaned up captain socketId:', captainResult !== null);
+            } catch (err) {
+                console.error('[Socket] Error during disconnect cleanup:', err);
+            }
         });
 
-        // Example: Chat feature
         socket.on('chat-message', ({ toSocketId, message }) => {
             sendMessage(toSocketId, 'chat-message', {
                 from: socket.id,
@@ -56,14 +78,14 @@ function initializeSocket(server) {
 
 function sendMessage(toSocketId, event, message) {
     if (!io) {
-        console.error('Socket.io not initialized');
+        console.error('[Socket] Socket.io not initialized');
         return;
     }
     const socket = connectedSockets.get(toSocketId);
     if (socket) {
         socket.emit(event, message);
     } else {
-        console.warn(`Socket with id ${toSocketId} not found.`);
+        console.warn(`[Socket] Socket with ID ${toSocketId} not found.`);
     }
 }
 
