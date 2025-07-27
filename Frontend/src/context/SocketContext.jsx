@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { UserDataContext } from '../context/UserContext';
 
-const SOCKET_SERVER_URL = `${import.meta.env.VITE_BACKEND_URL}`; // Change to your backend server URL/port
+const SOCKET_SERVER_URL = `${import.meta.env.VITE_BACKEND_URL}`;
 
 export const SocketContext = createContext();
 
@@ -9,6 +10,7 @@ export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
   const socketRef = useRef();
+  const { user } = useContext(UserDataContext); // ✅ Correctly use context
 
   useEffect(() => {
     socketRef.current = io(SOCKET_SERVER_URL, {
@@ -18,10 +20,20 @@ export const SocketProvider = ({ children }) => {
 
     socketRef.current.on('connect', () => {
       console.log('Socket connected:', socketRef.current.id);
+
+      // ✅ Only emit if user exists
+      if (user?._id && user?.role) {
+        socketRef.current.emit('registerSocket', {
+          userId: user._id,
+          role: user.role,
+        });
+      }
     });
+
     socketRef.current.on('disconnect', () => {
       console.log('Socket disconnected');
     });
+
     socketRef.current.on('connect_error', (err) => {
       console.error('Socket connection error:', err);
     });
@@ -29,27 +41,18 @@ export const SocketProvider = ({ children }) => {
     return () => {
       socketRef.current.disconnect();
     };
-  }, []);
+  }, [user]); // ✅ Watches for user
 
-  // Send message to a specific event
-  const sendMessage = (eventName, data) => {
-    if (socketRef.current && socketRef.current.connected) {
-      socketRef.current.emit(eventName, data);
-    }
-  };
-
-  // Listen for messages from a specific event
-  const receiveMessage = (eventName, callback) => {
+  const sendMessage = (event, data) => {
     if (socketRef.current) {
-      socketRef.current.on(eventName, callback);
-      // Optionally return a cleanup function
-      return () => socketRef.current.off(eventName, callback);
+      socketRef.current.emit(event, data);
+    } else {
+      console.warn("Socket not connected.");
     }
-    return () => {};
   };
 
   return (
-    <SocketContext.Provider value={{ sendMessage, receiveMessage, socket: socketRef.current }}>
+    <SocketContext.Provider value={{ socket: socketRef.current , sendMessage}}>
       {children}
     </SocketContext.Provider>
   );

@@ -1,11 +1,13 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect , useContext } from 'react'
+import { Form, Link } from 'react-router-dom'
 import CaptainDetails from '../componets/CaptainDetails'
 import RidePopUp from '../componets/RidePopUp'
  import { useState } from 'react'
  import { useLayoutEffect } from 'react';
  import gsap from 'gsap'
 import ConfrimRidePopUp from '../componets/ConfirmRidePopUp'
+import {SocketContext} from '../context/SocketContext'
+import { CaptainDataContext } from '../context/CaptainContext'
 
 
 const CaptainHome = () => {
@@ -16,6 +18,17 @@ const CaptainHome = () => {
   const [confirmRidePopUpPanel, setConfirmRidePopUpPanel] = useState(false);
   const confirmRidePopUpPanelRef = React.useRef(null);
   
+  const {socket} = useContext(SocketContext)
+  const {captain} = useContext(CaptainDataContext)
+
+  
+useEffect(() => {
+  if (socket && captain?._id) {
+    console.log("✅ Emitting captain ID:", captain._id);
+    socket.emit("json", { userId: captain._id });
+  }
+}, [socket, captain]);
+
 
  useLayoutEffect(function(){
       if(ridePopUpPanel){

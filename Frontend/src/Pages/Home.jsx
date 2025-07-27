@@ -1,4 +1,4 @@
-import React, { use } from 'react'
+import React, { use, useContext, useEffect } from 'react'
 import { useState } from 'react'
 import { useLayoutEffect } from 'react';
 import gsap from 'gsap'
@@ -9,6 +9,9 @@ import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
 import WaitingForDriver from '../componets/WaitingForDriver';
 import axios from 'axios'
+import { SocketContext } from '../context/SocketContext'; 
+import { UserDataContext } from '../context/UserContext';
+
 
 const Home = () => {
     const [pickup , setPickup ] = useState('')
@@ -29,6 +32,19 @@ const Home = () => {
   const [activeField, setActiveField] = useState(null) // 'pickup' or 'destination'
   const [fare , setFare] = useState({})
   const [vehicleType , setVehicleType] = useState(null)
+
+
+  const {socket ,sendMessage } = useContext(SocketContext)
+  const {user} = useContext(UserDataContext)
+useEffect(() => {
+  if (sendMessage && user && user._id) {
+    sendMessage('json',{
+      
+      userType: 'user',
+      userId: user._id,
+    });
+  }
+}, [sendMessage, user]);
 
  
 
