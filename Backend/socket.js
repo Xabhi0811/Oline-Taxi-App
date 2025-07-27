@@ -1,9 +1,8 @@
 const { Server } = require('socket.io');
-const userModel = require('./models/user.model')
-const captainModel = require('./models/captain.module')
+const userModel = require('./models/user.model');
+const captainModel = require('./models/captain.module');
 let io;
 
-// Store connected sockets
 const connectedSockets = new Map();
 
 function initializeSocket(server) {
@@ -13,35 +12,44 @@ function initializeSocket(server) {
             credentials: true
         }
     });
+
     io.on('connection', (socket) => {
         console.log('Socket connected:', socket.id);
-         
-        socket.on('json', async(data) =>{
-            const {userId , userType} = data
-            if(userType === 'user'){
-                await userModel.findByIdAndUpdate(userId ,{
+
+        // Handle custom 'json' event
+        socket.on('json', async (data) => {
+             console.log('Received json event:', data);
+            const { userId, userType } = data;
+
+            if (userType === 'user') {
+                await userModel.findByIdAndUpdate(userId, {
+                    socketId: socket.id
+                });
+            } else if (userType === 'captain') {
+                await captainModel.findByIdAndUpdate(userId, {
                     socketID: socket.id
-                } )
+                });
             }
-            else if(userType === 'captain'){
-                await captainModel.findByIdAndUpdate(userId,{socketId: socketid})
-            }
-                socket.on('disconect', () =>{
-                    console.log(`Client disconnected: ${socket.id}`);
-                })
-            
-        })
+        });
 
         connectedSockets.set(socket.id, socket);
 
-        socket.on('disconnect', () => {
-            console.log('Socket disconnected:', socket.id);
+        // Clean up on disconnect
+        socket.on('disconnect', async () => {
+            console.log(`Client disconnected: ${socket.id}`);
             connectedSockets.delete(socket.id);
+
+            // Optional: also remove from DB
+            await userModel.findOneAndUpdate({ socketID: socket.id }, { socketID: null });
+            await captainModel.findOneAndUpdate({ socketID: socket.id }, { socketID: null });
         });
 
-        // Example: receive and broadcast a chat message
+        // Example: Chat feature
         socket.on('chat-message', ({ toSocketId, message }) => {
-            sendMessage(toSocketId, 'chat-message', { from: socket.id, message });
+            sendMessage(toSocketId, 'chat-message', {
+                from: socket.id,
+                message
+            });
         });
     });
 }
