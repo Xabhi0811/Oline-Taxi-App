@@ -5,7 +5,7 @@
     user:{
            type: mongoose.Schema.Types.ObjectId,
            ref: 'User',
-           require: true
+           required: true
     },
 
     captain:{
@@ -15,17 +15,17 @@
 
     pickup:{
         type: String,
-        require: true,
+        required: true,
     },
 
     destination:{
         type: String,
-        require: true,
+        required: true,
     },
 
     fare:{
         type: Number,
-        require: true,
+        required: true,
     },
 
     status:{
@@ -58,7 +58,7 @@
     Otp:{
         type: String,
         select: false,
-        require: true,
+        required: true,
     },
 
 })
