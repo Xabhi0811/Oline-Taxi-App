@@ -10,6 +10,8 @@ import {SocketContext} from '../context/SocketContext'
 import { CaptainDataContext } from '../context/CaptainContext'
 
 
+
+
 const CaptainHome = () => {
   
   const [ridePopUpPanel, setRidePopUpPanel] = useState(true);
@@ -21,14 +23,29 @@ const CaptainHome = () => {
   const {socket} = useContext(SocketContext)
   const {captain} = useContext(CaptainDataContext)
 
-  
 useEffect(() => {
   if (socket && captain?._id) {
-    console.log("✅ Emitting captain ID:", captain._id);
-    socket.emit("json", { userId: captain._id });
-  }
-}, [socket, captain]);
+    const handleConnect = () => {
+      console.log("🛰️ Socket connected in CaptainHome, emitting ID:", captain._id);
+      socket.emit("json", {
+        userType: "captain",
+        userId: captain._id,
+      });
+    };
 
+    if (socket.connected) {
+      handleConnect(); // already connected
+    } else {
+      socket.on("connect", handleConnect); // wait for connection
+    }
+
+    return () => {
+      socket.off("connect", handleConnect); // clean up
+    };
+  } else {
+    console.log("⛔ Captain or socket missing", { captain, socket });
+  }
+}, [socket, captain?._id]);
 
  useLayoutEffect(function(){
       if(ridePopUpPanel){
