@@ -56,8 +56,9 @@ function initializeSocket(server) {
     // ✅ Location update for captain
    socket.on('update-location-captain', async (data) => {
   const { userId, location } = data;
+  
 
-  if (!location || typeof location.ltd !== 'number' || typeof location.lng !== 'number') {
+  if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
     return socket.emit('error', { message: 'Invalid location' });
   }
 
@@ -67,7 +68,7 @@ function initializeSocket(server) {
       {
         location: {
           type: 'Point',
-          coordinates: [location.lng, location.ltd] // [lng, lat]
+          coordinates: [location.lat, location.lat] // [lng, lat]
         }
       },
       { new: true }
@@ -127,7 +128,7 @@ function initializeSocket(server) {
 }
 
 // Helper to send message to a specific socket
-function sendMessage(toSocketId, event, message) {
+function sendMessage(toSocketId, messageObject) {
   if (!io) {
     console.error('[Socket] ❌ Socket.IO not initialized');
     return;
@@ -136,8 +137,8 @@ function sendMessage(toSocketId, event, message) {
   const socket = connectedSockets.get(toSocketId);
 
   if (socket) {
-    console.log(`[Socket] 📤 Emitting '${event}' to ${toSocketId}`);
-    socket.emit(event, message);
+    console.log(`[Socket] 📤 Emitting '${messageObject}' to ${toSocketId}`);
+    socket.emit(messageObject.event, messageObject.data);
   } else {
     console.warn(`[Socket] ⚠️ Could not find socket with ID: ${toSocketId}`);
   }

@@ -90,11 +90,23 @@ module.exports.getDistanceTime = async (origin, destination) => {
     }
 
 
-    module.exports.getCaptainInTheRadius = async (ltd , lng , radius) =>{
+    module.exports.getCaptainInTheRadius = async (lat , lng , radius) =>{
+         
+
+
+
+
+
+
+
+
+
+
+
       const captains = await captainModel.find({
         location :{
           $geoWithin:{
-            $centerSphere: [[ltd ,lng] , radius/3963.2]
+            $centerSphere: [[lat ,lng] , radius/6371]
           }
         }
       })
