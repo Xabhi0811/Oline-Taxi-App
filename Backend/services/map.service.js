@@ -1,5 +1,6 @@
 const axios = require('axios');
 require('dotenv').config(); // To use environment variables from .env
+const captainModel = require('../models/captain.module')
 
 module.exports.getAddressCoordinates = async (address) => {
     try {
@@ -86,4 +87,16 @@ module.exports.getDistanceTime = async (origin, destination) => {
             console.error('Error fetching autocomplete suggestions:', error.message);
             throw error;
         }
+    }
+
+
+    module.exports.getCaptainInTheRadius = async (ltd , lng , radius) =>{
+      const captains = await captainModel.find({
+        location :{
+          $geoWithin:{
+            $centerSphere: [[ltd ,lng] , radius/3963.2]
+          }
+        }
+      })
+      return captains
     }
