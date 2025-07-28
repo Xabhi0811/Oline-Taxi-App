@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { io } from 'socket.io-client';
 import { UserDataContext } from '../context/UserContext';
 
-const SOCKET_SERVER_URL = `${import.meta.env.VITE_BACKEND_URL}`;
+const SOCKET_SERVER_URL = `${import.meta.env.VITE_SOCKET_URL}`;
 
 export const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);

@@ -12,7 +12,7 @@ import { CaptainDataContext } from '../context/CaptainContext'
 
 
 
-const CaptainHome = () => {
+const CaptainHome = ( ) => {
   
   const [ridePopUpPanel, setRidePopUpPanel] = useState(true);
   const RidePopUpPanelRef = React.useRef(null);
@@ -22,30 +22,86 @@ const CaptainHome = () => {
   
   const {socket} = useContext(SocketContext)
   const {captain} = useContext(CaptainDataContext)
+  const [isSocketConnected, setIsSocketConnected] = useState(false);
+  const [location, setLocation] = useState({ ltd: null, lng: null });
+// Track when socket is ready
+ 
 
-useEffect(() => {
-  if (socket && captain?._id) {
-    const handleConnect = () => {
-      console.log("🛰️ Socket connected in CaptainHome, emitting ID:", captain._id);
-      socket.emit("json", {
-        userType: "captain",
-        userId: captain._id,
-      });
-    };
-
-    if (socket.connected) {
-      handleConnect(); // already connected
-    } else {
-      socket.on("connect", handleConnect); // wait for connection
+    useEffect(() => {
+    if (!captain || !captain._id) {
+      console.warn("🛑 Captain data not available yet");
+      return;
     }
 
+    if (!socket.connected) {
+      console.log("📡 Waiting for socket to connect...");
+    }
+
+    socket.on('connect', () => {
+      console.log("✅ Socket connected in listener:", socket.id);
+      setIsSocketConnected(true);
+
+      console.log("👤 Captain ready:", captain);
+      console.log("📡 Socket is ready:", socket.id);
+
+      // Emit initial identification to backend
+      socket.emit('json', {
+        userId: captain._id,
+        userType: 'captain'
+      });
+    });
+
+    // Optional: handle disconnect
+    socket.on('disconnect', () => {
+      setIsSocketConnected(false);
+      console.log("🔌 Socket disconnected");
+    });
+
+    // Cleanup on unmount
     return () => {
-      socket.off("connect", handleConnect); // clean up
+      socket.off('connect');
+      socket.off('disconnect');
     };
-  } else {
-    console.log("⛔ Captain or socket missing", { captain, socket });
-  }
-}, [socket, captain?._id]);
+  }, [captain]);
+
+  // Function to emit location to backend
+  const sendLocationToBackend = (lat, lng) => {
+    if (!captain?._id) return;
+    socket.emit('update-location-captain', {
+      userId: captain._id,
+      location: {
+        ltd: lat,
+        lng: lng
+      }
+    });
+    console.log("📍 Sent location update:", { lat, lng });
+  };
+
+  // Fetch location on mount
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      console.warn("❌ Geolocation not supported");
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ ltd: latitude, lng: longitude });
+        sendLocationToBackend(latitude, longitude);
+      },
+      (error) => {
+        console.error("❌ Error getting location:", error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [captain]);
 
  useLayoutEffect(function(){
       if(ridePopUpPanel){
