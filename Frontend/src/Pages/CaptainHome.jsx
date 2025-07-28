@@ -25,9 +25,8 @@ const CaptainHome = ( ) => {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [location, setLocation] = useState({ ltd: null, lng: null });
 // Track when socket is ready
- 
 
-    useEffect(() => {
+  useEffect(() => {
     if (!captain || !captain._id) {
       console.warn("🛑 Captain data not available yet");
       return;
@@ -37,71 +36,75 @@ const CaptainHome = ( ) => {
       console.log("📡 Waiting for socket to connect...");
     }
 
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       console.log("✅ Socket connected in listener:", socket.id);
       setIsSocketConnected(true);
 
       console.log("👤 Captain ready:", captain);
       console.log("📡 Socket is ready:", socket.id);
 
-      // Emit initial identification to backend
-      socket.emit('json', {
+      // 1️⃣ Identify captain to backend
+      socket.emit("json", {
         userId: captain._id,
-        userType: 'captain'
+        userType: "captain",
       });
+
+      // 2️⃣ Emit socket ID to backend
+      socket.emit("update-captain-socket-id", {
+        captainId: captain._id,
+        socketId: socket.id,
+      });
+
+      // 3️⃣ Start watching location
+      if ("geolocation" in navigator) {
+        const watchId = navigator.geolocation.watchPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            console.log("📍 Location found:", latitude, longitude);
+            setLocation({ ltd: latitude, lng: longitude });
+
+            // Send location to backend
+            sendLocationToBackend(latitude, longitude);
+          },
+          (error) => {
+            console.error("❌ Error getting location:", error.message);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0,
+          }
+        );
+
+        // Cleanup location watcher
+        return () => {
+          navigator.geolocation.clearWatch(watchId);
+        };
+      } else {
+        console.warn("🚫 Geolocation not supported in this browser.");
+      }
     });
 
-    // Optional: handle disconnect
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       setIsSocketConnected(false);
       console.log("🔌 Socket disconnected");
     });
 
-    // Cleanup on unmount
     return () => {
-      socket.off('connect');
-      socket.off('disconnect');
+      socket.off("connect");
+      socket.off("disconnect");
     };
   }, [captain]);
 
-  // Function to emit location to backend
+  // 🔁 Send location to backend
   const sendLocationToBackend = (lat, lng) => {
     if (!captain?._id) return;
-    socket.emit('update-location-captain', {
-      userId: captain._id,
-      location: {
-        ltd: lat,
-        lng: lng
-      }
+    socket.emit("update-location-captain", {
+      captainId: captain._id,
+      location: { ltd: lat, lng: lng },
     });
     console.log("📍 Sent location update:", { lat, lng });
   };
-
-  // Fetch location on mount
-  useEffect(() => {
-    if (!("geolocation" in navigator)) {
-      console.warn("❌ Geolocation not supported");
-      return;
-    }
-
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ ltd: latitude, lng: longitude });
-        sendLocationToBackend(latitude, longitude);
-      },
-      (error) => {
-        console.error("❌ Error getting location:", error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-    );
-
-    return () => navigator.geolocation.clearWatch(watchId);
-  }, [captain]);
 
  useLayoutEffect(function(){
       if(ridePopUpPanel){
