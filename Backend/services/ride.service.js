@@ -2,6 +2,7 @@ const rideModule = require('../models/ride.module');
 const MapService = require('../services/map.service'); 
 const crypto = require('crypto');  
 const { getFare } = require('./fare.util');
+const captainModel = require('../models/captain.module');
 // adjust path
 
   // ✅ adjust path if needed
@@ -42,6 +43,29 @@ module.exports.createRide = async ({
        Otp: getOtp(6), // optional: you can store the type
         fare: fare[vehicleType]
     });
+
+    return ride;
+};
+
+
+module.exports.confirmRide = async ({ rideId, captain }) => {
+    if (!rideId) {
+        throw new Error('Ride id is required');
+    }
+
+    await rideModule.findByIdAndUpdate(
+        { _id: rideId },
+        {
+            status: 'accepted',
+            captain: captain._id
+        }
+    );
+
+    const ride = await rideModule.findOne({ _id: rideId }).populate('user');
+    
+    if (!ride) {
+        throw new Error('Ride not found');
+    }
 
     return ride;
 };

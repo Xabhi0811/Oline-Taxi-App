@@ -68,3 +68,30 @@ module.exports.getFare =async (req, res) =>{
    }
 
 }
+
+
+module.exports.confirmRide = async (req, res) =>{
+   const error = validationResult(req)
+   if(!error.isEmpty()){
+      return res.status(400).json({error: error.array()})
+   }
+   const {rideId} = req.body
+    
+   try{
+      const ride = await rideService.confirmRide(rideId , req.captain._id)
+
+
+       sendMessage( ride.user.socketId,{
+         event: "ride-confrim",
+         data: ride 
+       })
+
+
+
+      return res.status(200).json(ride)
+   }catch(err){
+      return res.status(500).json({message: err.message})
+   }
+
+   
+}

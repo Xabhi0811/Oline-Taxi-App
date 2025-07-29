@@ -4,6 +4,7 @@
  const rideController = require ('../controllers/ride.controller')
  const authMiddleware = require('../middlewares/auth.middleware')
  const MapService = require('../services/map.service'); // ✅ FIXED
+//const { authCaptain } = require('../middleware/auth.middleware');
 
 
 
@@ -57,5 +58,14 @@ router.get('/get-fare', async (req, res) => {
     res.status(500).json({ message: 'Failed to calculate fare', error: error.message });
   }
 });
+
+
+  router.post(
+  '/confirm',
+  authMiddleware.authCaptain,
+  body('rideId').isMongoId().withMessage('Invalid rideId'),
+  rideController.confirmRide
+);
+
 
  module.exports = router;
