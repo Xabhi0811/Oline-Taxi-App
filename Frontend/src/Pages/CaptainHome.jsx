@@ -113,6 +113,25 @@ const watchId = navigator.geolocation.watchPosition(
  })
 
 
+ async function confirmRide() {
+  const response = await axios.post(
+    `${import.meta.env.VITE_BACKEND_URL}/rides/confirm`,
+    {
+      rideId: ride._id,
+      captainId: captain._id
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    }
+  );
+
+  setRidePopUpPanel(false);
+  setConfirmRidePopUpPanel(true);
+}
+
+
 
  useLayoutEffect(function(){
       if(ridePopUpPanel){

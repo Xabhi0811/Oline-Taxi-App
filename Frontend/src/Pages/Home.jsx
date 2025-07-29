@@ -36,6 +36,16 @@ const Home = () => {
 
   const {socket ,sendMessage } = useContext(SocketContext)
   const {user} = useContext(UserDataContext)
+
+
+
+  socket.on('ride-confrim', ride =>{
+    setVehicleFound(false)
+    setWaitingForDriver(true)
+  })
+
+
+
 useEffect(() => {
   if (sendMessage && user && user._id) {
     sendMessage('json',{
@@ -45,6 +55,8 @@ useEffect(() => {
     });
   }
 }, [sendMessage, user]);
+
+
 
  
 
@@ -105,6 +117,12 @@ useEffect(() => {
   const SubmitHandler = (e) => {
     e.preventDefault()
   }
+
+
+
+
+
+
 
 useLayoutEffect(() => {
   if (panelOpen) {
