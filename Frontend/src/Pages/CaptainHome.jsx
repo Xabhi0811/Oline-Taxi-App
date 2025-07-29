@@ -166,6 +166,7 @@ const watchId = navigator.geolocation.watchPosition(
     ride={ride} 
     setRidePopUpPanel={setRidePopUpPanel} 
     setConfirmRidePopUpPanel={setConfirmRidePopUpPanel} 
+    ConfrimRide={confirmRide}
   />
 </div>
 
