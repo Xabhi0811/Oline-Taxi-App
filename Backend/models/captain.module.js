@@ -64,17 +64,20 @@ const captainSchema = new mongoose.Schema({
             enum: ['car', 'bike', 'truck', 'auto']
         },
     },
-     location: {
-      type: {
-      type: String,
-      enum: ['Point'],
-      default: 'Point',
-          },
-       coordinates: {
-      type: [Number], // [longitude, latitude]
-      default: null,
-    }
+   location: {
+  type: {
+    type: String,
+    enum: ['Point'],
+    required: true,
+    default: 'Point'
+  },
+  coordinates: {
+    type: [Number], // [longitude, latitude]
+    required: true
   }
+}
+
+
     })
 
 

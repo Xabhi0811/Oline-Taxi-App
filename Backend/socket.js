@@ -53,37 +53,7 @@ function initializeSocket(server) {
     connectedSockets.set(socket.id, socket);
     console.log(`[Socket] 🗂️ Added to connectedSockets map: ${socket.id}`);
 
-    // ✅ Location update for captain
-   socket.on('update-location-captain', async (data) => {
-  const { userId, location } = data;
-  
-
-  if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
-    return socket.emit('error', { message: 'Invalid location' });
-  }
-
-  try {
-    const updated = await captainModel.findByIdAndUpdate(
-      userId,
-      {
-        location: {
-          type: 'Point',
-          coordinates: [location.lat, location.lat] // [lng, lat]
-        }
-      },
-      { new: true }
-    );
-
-    if (!updated) {
-      console.warn(`[Socket] ⚠️ Captain not found for location update: ${userId}`);
-    } else {
-      console.log(`[Socket] 📍 Location updated for captain ${userId}:`, updated.location);
-    }
-  } catch (err) {
-    console.error(`[Socket] ❌ Error updating location:`, err);
-  }
-});
-
+    
 
     // ✅ Socket ID update (optional if already handled in 'json' event)
     socket.on("update-captain-socket-id", async ({ captainId, socketId }) => {
@@ -115,6 +85,43 @@ function initializeSocket(server) {
         console.error(`[Socket] ❌ Error during disconnect cleanup:`, err);
       }
     });
+
+
+    // ✅ Location update for captain
+   socket.on('update-location-captain', async (data) => {
+  const { userId, location } = data;
+
+  if (
+    !location ||
+    typeof location.lat !== 'number' ||
+    typeof location.lng !== 'number'
+  ) {
+    return socket.emit('error abhi', { message: 'Invalid location' });
+  }
+
+  try {
+    const updated = await captainModel.findByIdAndUpdate(
+      userId,
+      {
+        location: {
+          type: 'Point',
+          coordinates: [location.lng, location.lat],
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      console.warn(`[Socket] ⚠️ Captain not found for location update: ${userId}`);
+    } else {
+      console.log(`[Socket] 📍 Location updated for captain ${userId}:`, updated.location);
+    }
+  } catch (err) {
+    console.error(`[Socket] ❌ Error updating location:`, err);
+  }
+});
+
+
 
     // ✅ Chat message between sockets
     socket.on('chat-message', ({ toSocketId, message }) => {

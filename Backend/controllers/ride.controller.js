@@ -12,13 +12,25 @@
 
      try{
        const ride = await rideService.createRide({user: req.user._id, pickup , destination , vehicleType})
+           res.status(201).json(ride)
       
        const pickupCoordinates = await mapService.getAddressCoordinates(pickup)
     
-       const captainIdRadius = await mapService.getCaptainInTheRadius(  pickupCoordinates.lat,  pickupCoordinates.lng, 5 );
-       console.log(pickupCoordinates)
+       const captainIdRadius = await mapService.getCaptainInTheRadius(  pickupCoordinates.lat,  pickupCoordinates.lng, 2 );
+         
+       ride.Otp =""
 
-        res.status(201).json(ride)
+       captainIdRadius.map(captain =>{
+
+         sendMessageToSocketId(captain.socketId,{
+            event: 'new-ride',
+            data: ride,
+         })
+       })
+
+
+
+    
      }catch(err){
       return res.status(500).json({message: err.message})
      }
