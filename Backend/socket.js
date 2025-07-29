@@ -135,7 +135,7 @@ function initializeSocket(server) {
 }
 
 // Helper to send message to a specific socket
-function sendMessage(toSocketId, messageObject) {
+function sendMessage(toSocketId, { event, data }) {
   if (!io) {
     console.error('[Socket] ❌ Socket.IO not initialized');
     return;
@@ -144,8 +144,8 @@ function sendMessage(toSocketId, messageObject) {
   const socket = connectedSockets.get(toSocketId);
 
   if (socket) {
-    console.log(`[Socket] 📤 Emitting '${messageObject}' to ${toSocketId}`);
-    socket.emit(messageObject.event, messageObject.data);
+    console.log(`[Socket] 📤 Emitting event '${event}' to socket ID: ${toSocketId}`);
+    socket.emit(event, data);
   } else {
     console.warn(`[Socket] ⚠️ Could not find socket with ID: ${toSocketId}`);
   }

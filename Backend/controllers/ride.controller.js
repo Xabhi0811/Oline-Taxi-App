@@ -1,7 +1,8 @@
  const rideService = require('../services/ride.service')
  const {validationResult} = require('express-validator')
  const mapService = require('../services/map.service')
- const {sendMessage} = require('../socket')
+ const {sendMessage} = require('../socket');
+const rideModule = require('../models/ride.module');
  
 module.exports.createRide = async (req, res) => {
   const error = validationResult(req);
@@ -30,11 +31,14 @@ module.exports.createRide = async (req, res) => {
 
     console.log("🧭 Nearby Captains Found:", captainIdRadius);
 
+
+    const rideWithUser = await rideModule.findOne({_id: ride._id}).populate('user')
+
     captainIdRadius.map((captain) => {
       console.log(`📡 Emitting to captain: ${captain._id}, socketId: ${captain.socketId}`);
       sendMessage(captain.socketId, {
         event: "new-ride",
-        data: ride,
+        data: rideWithUser,
       });
     });
 
