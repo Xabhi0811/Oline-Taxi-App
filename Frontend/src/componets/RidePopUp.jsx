@@ -1,6 +1,8 @@
 import React from 'react'
 
 const RidePopUp = (props) => {
+  console.log("RidePopUp props.ride.user:", props.ride?.user);
+
   return (
     <div>
       <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
@@ -11,7 +13,10 @@ const RidePopUp = (props) => {
        <div className=" flex items-center justify-between mt-4 p-3 bg-yellow-400 rounded-lg ">
         <div className="flex items-center gap-3 ">
             <img className='h-12 w-12 rounded-full object-cover' src='https://wallpapers.com/images/file/beautiful-woman-with-random-people-in-background-roumbpovzh5jzxj5.jpg' alt='user'/>
-            <h2 className='text-xl font-medium'>Abhishek Singh Chauhan</h2>
+            <h2 className='text-xl font-medium'><p>
+  {props.ride?.user?.fullname?.firstname || 'NoFirst'} {props.ride?.user?.fullname?.lastname || 'NoLast'}
+     </p>
+</h2>
         </div>
         <h5 className='text-lg font-semibold'>2.2 Km</h5>
        </div>
@@ -23,20 +28,20 @@ const RidePopUp = (props) => {
                <i className=" text-3xl ri-map-pin-user-line"></i>
                 <div>
                 <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>gole mandir </p>
+                <p className='text-sm text-gray-600 '>{props.ride?.pickup}</p>
                 </div>
             </div>
             <div className="flex items-center gap-5 p-2 border-b-2">
                 <i className=" text-2xl ri-map-pin-fill"></i>
                 <div>
                 <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>DD nagar</p>
+                <p className='text-sm text-gray-600 '>{props.ride?.destination}</p>
                 </div>
             </div>
             <div className="flex items-center gap-5 p-2 ">
                 <i className=" text-2xl ri-currency-line"></i>
                 <div>
-                <h3 className='text-lg font-medium'>$125</h3>
+                <h3 className='text-lg font-medium'>{props.ride?.fare}</h3>
                 <p className='text-sm text-gray-600 '>Cash Cash</p>
                 </div>
             </div>
