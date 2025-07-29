@@ -153,5 +153,5 @@ function sendMessage(toSocketId, messageObject) {
 
 module.exports = {
   initializeSocket,
-  sendMessage
+   sendMessage
 };

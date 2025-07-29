@@ -1,6 +1,8 @@
 const axios = require('axios');
 require('dotenv').config(); // To use environment variables from .env
 const captainModel = require('../models/captain.module')
+ // ✅ adjust the path as needed
+
 
 module.exports.getAddressCoordinates = async (address) => {
     try {
@@ -91,24 +93,16 @@ module.exports.getDistanceTime = async (origin, destination) => {
 
 
     module.exports.getCaptainInTheRadius = async (lat , lng , radius) =>{
-         
-
-
-
-
-
-
-
-
-
 
 
       const captains = await captainModel.find({
         location :{
           $geoWithin:{
-            $centerSphere: [[lat ,lng] , radius/6371]
+            $centerSphere: [[lng, lat] , radius/6371]
           }
         }
       })
+      console.log("🔍 Captains in radius:", captains.map(c => ({ id: c._id, socketId: c.socketId })));
+
       return captains
     }

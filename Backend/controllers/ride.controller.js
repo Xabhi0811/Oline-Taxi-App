@@ -1,42 +1,50 @@
  const rideService = require('../services/ride.service')
  const {validationResult} = require('express-validator')
  const mapService = require('../services/map.service')
- const {sendMessageToSocketId} = require('../socket')
+ const {sendMessage} = require('../socket')
+ 
+module.exports.createRide = async (req, res) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(400).json({ error: error.array() });
+  }
 
- module.exports.createRide = async (req , res) =>{
-    const error = validationResult(req)
-     if(!error.isEmpty()){
-        return res.status(400).json({error: error.array()})
-     }
-     const {userId ,pickup , destination , vehicleType} = req.body
+  const { userId, pickup, destination, vehicleType } = req.body;
 
-     try{
-       const ride = await rideService.createRide({user: req.user._id, pickup , destination , vehicleType})
-           res.status(201).json(ride)
-      
-       const pickupCoordinates = await mapService.getAddressCoordinates(pickup)
-    
-       const captainIdRadius = await mapService.getCaptainInTheRadius(  pickupCoordinates.lat,  pickupCoordinates.lng, 2 );
-         
-       ride.Otp =""
+  try {
+    const ride = await rideService.createRide({
+      user: req.user._id,
+      pickup,
+      destination,
+      vehicleType,
+    });
 
-       captainIdRadius.map(captain =>{
+    const pickupCoordinates = await mapService.getAddressCoordinates(pickup);
+    const captainIdRadius = await mapService.getCaptainInTheRadius(
+      pickupCoordinates.lat,
+      pickupCoordinates.lng,
+      5
+    );
 
-         sendMessageToSocketId(captain.socketId,{
-            event: 'new-ride',
-            data: ride,
-         })
-       })
+    ride.Otp = "";
 
+    console.log("🧭 Nearby Captains Found:", captainIdRadius);
 
+    captainIdRadius.map((captain) => {
+      console.log(`📡 Emitting to captain: ${captain._id}, socketId: ${captain.socketId}`);
+      sendMessage(captain.socketId, {
+        event: "new-ride",
+        data: ride,
+      });
+    });
 
-    
-     }catch(err){
-      return res.status(500).json({message: err.message})
-     }
-    
-
- }
+    // ✅ Only send response once all async work is done
+    return res.status(201).json(ride);
+  } catch (err) {
+    console.error("❌ Error in createRide:", err);
+    return res.status(500).json({ message: err.message });
+  }
+};
 
  
 module.exports.getFare =async (req, res) =>{
