@@ -194,15 +194,15 @@ Create `Backend/.env` with the following variables:
 PORT=4000
 
 # MongoDB Connection String
-DB_CONNECT=mongodb://localhost:27017/uber-video
+DB_CONNECT=mongodb:
 # OR use MongoDB Atlas:
-# DB_CONNECT=mongodb+srv://username:password@cluster.mongodb.net/uber-video
+# DB_CONNECT=mongodb+srv:o
 
 # JWT Secret (used for token signing)
-JWT_SECRET=mySuperSecretKey12345
+JWT_SECRET=
 
 # Google Maps API Key
-GOOGLE_MAPS_API=AIzaSyDG2CVFQZNnAb8kU_J7N2iYjrE0LwWk1EA
+GOOGLE_MAPS_API=
 ```
 
 ### Important Notes:
