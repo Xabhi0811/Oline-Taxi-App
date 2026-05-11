@@ -10,9 +10,10 @@ const WaitingForDriver = (props) => {
          <div className=" flex items-center justify-between ">
           <img className='h-12' src='https://tse1.mm.bing.net/th/id/OIP.90_IXyFPb47LZ_AYAe1ylAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'alt='car'/>
           <div className="text-right">
-            <h2 className='text-2lg font-medium'>Abhishek</h2>
-            <h2 className='text-xl font-semibold -mt-1 -mb-1'>MP29 AB08</h2>
+            <h2 className='text-2lg font-medium  capitalize'> {props.ride?.captain?.fullname?.firstname || 'NoFirst'} {props.ride?.user?.fullname?.lastname || 'NoLast'}</h2>
+            <h2 className='text-xl font-semibold -mt-1 -mb-1'>{props.ride?.captain.vehicle.plate}</h2>
             <h2 className='text-sm text-gray-600'>Swift</h2>
+            <h1 className='text-lg font-semibold'>{props.ride?.otp}</h1>
           </div>
          </div>
       
@@ -23,20 +24,20 @@ const WaitingForDriver = (props) => {
                <i className=" text-3xl ri-map-pin-user-line"></i>
                 <div>
                 <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>gole mandir </p>
+                <p className='text-sm text-gray-600 '>{props.ride?.pickup}</p>
                 </div>
             </div>
             <div className="flex items-center gap-5 p-2 border-b-2">
                 <i className=" text-2xl ri-map-pin-fill"></i>
                 <div>
                 <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>DD nagar</p>
+                <p className='text-sm text-gray-600 '>{props.ride?.destination}</p>
                 </div>
             </div>
             <div className="flex items-center gap-5 p-2 ">
                 <i className=" text-2xl ri-currency-line"></i>
                 <div>
-                <h3 className='text-lg font-medium'>$125</h3>
+                <h3 className='text-lg font-medium'>{props.ride?.fare}</h3>
                 <p className='text-sm text-gray-600 '>Cash Cash</p>
                 </div>
             </div>

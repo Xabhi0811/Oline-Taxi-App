@@ -20,10 +20,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     minlength: [5, 'Email must be at least 5 characters'],
   },
-  password: { // 🔁 changed from Password → password
+  password: { //
     type: String,
     required: true,
-    select: false, // good to keep it hidden
+    select: false, 
   },
   socketID: {
     type: String,
@@ -43,7 +43,7 @@ userSchema.methods.generateAuthToken = function () {
 
 // Compare password
 userSchema.methods.comparePassword = async function (password) {
-  return await bcrypt.compare(password, this.password); // lowercase!
+  return await bcrypt.compare(password, this.password); 
 };
 
 // Hash password

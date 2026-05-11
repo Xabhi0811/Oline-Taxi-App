@@ -2,7 +2,7 @@
  const router = express.Router();
  const {body , query} = require('express-validator')
  const rideController = require ('../controllers/ride.controller')
- const authMiddleware = require('../middlewares/auth.middleware')
+ const authMiddleware = require('../models/middlewares/auth.middleware')
  const MapService = require('../services/map.service'); // ✅ FIXED
 //const { authCaptain } = require('../middleware/auth.middleware');
 
@@ -66,6 +66,22 @@ router.get('/get-fare', async (req, res) => {
   body('rideId').isMongoId().withMessage('Invalid rideId'),
   rideController.confirmRide
 );
+
+
+
+
+
+
+router.get('/start-ride',
+  authMiddleware.authCaptain,
+  query('rideId').isMongoId().withMessage('invaild ride /start-ride ride id'),
+  query('otp').isString().isLength({min: 6 , max: 6}).withMessage('ivaild otp hai'),
+  rideController.startRide
+)
+
+
+
+
 
 
  module.exports = router;

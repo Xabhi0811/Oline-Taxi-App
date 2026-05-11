@@ -78,7 +78,7 @@ module.exports.confirmRide = async (req, res) =>{
    const {rideId} = req.body
     
    try{
-      const ride = await rideService.confirmRide(rideId , req.captain._id)
+      const ride = await rideService.confirmRide({rideId, captain: req.captain._id })
 
 
        sendMessage( ride.user.socketId,{
@@ -94,4 +94,28 @@ module.exports.confirmRide = async (req, res) =>{
    }
 
    
+}
+
+
+
+module.exports.startRide = async (req , res) =>{
+   const error = validationResult(req)
+   if(!error.isEmpty()){
+    return res.status(400).json({ error : error.array()})
+   }
+    
+   const {rideId , otp} = req.query
+
+   try{
+    const ride = await rideService.startRide({ rideId , otp , captain: req.captain })
+  
+    sendMessage(ride.user.socketId,{
+      event: "ride-started",
+      data: ride
+    })
+
+    return res.status(200).json(ride)
+   }catch(err){
+    return res.status(500).json({message: err.message})
+   }
 }

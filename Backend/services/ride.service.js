@@ -3,6 +3,7 @@ const MapService = require('../services/map.service');
 const crypto = require('crypto');  
 const { getFare } = require('./fare.util');
 const captainModel = require('../models/captain.module');
+const { sendMessage } = require('../socket');
 // adjust path
 
   // ✅ adjust path if needed
@@ -16,12 +17,10 @@ const captainModel = require('../models/captain.module');
 
 
 
-  function getOtp(num){
-function generateOtp(num){
-    const otp = crypto.randomInt(Math.pow(10, num-1), Math.pow(10,num)).toString();
+  function getOtp(num) {
+    const otp = crypto.randomInt(Math.pow(10, num - 1), Math.pow(10, num)).toString();
     return otp;
-}
-return generateOtp(num)}
+  }
 
 
 
@@ -48,7 +47,7 @@ module.exports.createRide = async ({
 };
 
 
-module.exports.confirmRide = async ({ rideId, captain }) => {
+module.exports.confirmRide = async ({ rideId, captain  }) => {
     if (!rideId) {
         throw new Error('Ride id is required');
     }
@@ -58,10 +57,10 @@ module.exports.confirmRide = async ({ rideId, captain }) => {
         {
             status: 'accepted',
             captain: captain._id
-        }
+        } 
     );
 
-    const ride = await rideModule.findOne({ _id: rideId }).populate('user');
+    const ride = await rideModule.findOne({ _id: rideId }).populate('user').populate('captain').select('+Otp')
     
     if (!ride) {
         throw new Error('Ride not found');
@@ -69,3 +68,40 @@ module.exports.confirmRide = async ({ rideId, captain }) => {
 
     return ride;
 };
+
+
+
+module.exports.startRide = async ({rideId , otp , captain}) =>{
+    if(!rideId || !otp){
+        throw new Error('Ride id aur uski otp chaiye')
+    }
+
+    const ride = await rideModule.findOne({
+        _id: rideId
+    }).populate('user').populate('captain').select('+Otp')
+
+
+    if(!ride){
+        throw new Error(' ride idhar nhi hai')
+    }
+
+    if(ride.status !== 'accepted'){
+        throw new Error('ride not mai nhi le rha ')
+    }
+
+    if(ride.Otp !== otp.toString()){
+     throw  new Error ('opt galat hai')
+    }
+
+    await rideModule.findOneAndUpdate({
+        _id: rideId
+    },{
+        status : "ongoing "
+    })
+
+    sendMessage(ride.user.socketId,{
+        event: 'ride-started',
+        data: ride 
+    })
+
+}
