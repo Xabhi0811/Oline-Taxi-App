@@ -81,7 +81,7 @@ module.exports.confirmRide = async (req, res) =>{
       const ride = await rideService.confirmRide({rideId, captain: req.captain._id })
 
 
-       sendMessage( ride.user.socketId,{
+       sendMessage( ride.user.socketID,{
          event: "ride-confrim",
          data: ride 
        })
@@ -109,7 +109,7 @@ module.exports.startRide = async (req , res) =>{
    try{
     const ride = await rideService.startRide({ rideId , otp , captain: req.captain })
   
-    sendMessage(ride.user.socketId,{
+    sendMessage(ride.user.socketID,{
       event: "ride-started",
       data: ride
     })

@@ -56,7 +56,7 @@ module.exports.confirmRide = async ({ rideId, captain  }) => {
         { _id: rideId },
         {
             status: 'accepted',
-            captain: captain._id
+            captain: captain
         } 
     );
 
@@ -96,12 +96,13 @@ module.exports.startRide = async ({rideId , otp , captain}) =>{
     await rideModule.findOneAndUpdate({
         _id: rideId
     },{
-        status : "ongoing "
+        status : 'ongoing'
     })
 
-    sendMessage(ride.user.socketId,{
+    sendMessage(ride.user.socketID,{
         event: 'ride-started',
         data: ride 
     })
 
+    return ride;
 }

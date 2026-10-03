@@ -1,5 +1,6 @@
 import React, { useEffect , useContext } from 'react'
-import { Form, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
 import CaptainDetails from '../componets/CaptainDetails'
 import RidePopUp from '../componets/RidePopUp'
  import { useState } from 'react'
@@ -105,12 +106,21 @@ const watchId = navigator.geolocation.watchPosition(
 }, [socket, captain]);
 
 
- socket.on('new-ride', (data) =>{
-  console.log(data)
-  setRide(data)
-  setRidePopUpPanel(true)
+useEffect(() => {
+  if (!socket) return;
 
- })
+  const handleNewRide = (data) => {
+    console.log(data);
+    setRide(data);
+    setRidePopUpPanel(true);
+  };
+
+  socket.on('new-ride', handleNewRide);
+
+  return () => {
+    socket.off('new-ride', handleNewRide);
+  };
+}, [socket]);
 
 
  async function confirmRide() {
@@ -122,7 +132,7 @@ const watchId = navigator.geolocation.watchPosition(
     },
     {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
+        Authorization: `Bearer ${localStorage.getItem('captainToken')}`
       }
     }
   );

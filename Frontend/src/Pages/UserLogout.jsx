@@ -10,7 +10,7 @@ const UserLogout = () => {
       const token = localStorage.getItem('token');
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/users/logout`,
+          `${import.meta.env.VITE_BACKEND_URL}/users/logout`,
           {},
           {
             headers: {

@@ -30,7 +30,7 @@
 
     status:{
         type: String,
-        enum: ['pending', 'accepted', 'ongaoing', 'completed', 'cancelled'],
+        enum: ['pending', 'accepted', 'ongoing', 'completed', 'cancelled'],
         default: 'pending',
     },
 

@@ -57,19 +57,28 @@ useEffect(() => {
 }, [sendMessage, user]);
 
 
-  socket.on('ride-confrim', ride =>{
-    setVehicleFound(false)
-    setWaitingForDriver(true)
-    setRide(ride)
-  })
+useEffect(() => {
+  if (!socket) return;
 
+  const handleRideConfirm = (ride) => {
+    setVehicleFound(false);
+    setWaitingForDriver(true);
+    setRide(ride);
+  };
 
+  const handleRideStarted = (ride) => {
+    setWaitingForDriver(false);
+    navigate('/riding');
+  };
 
-  socket.on('ride-started', ride =>{
-    setWaitingForDriver(false)
-    navigate('/riding')
+  socket.on('ride-confrim', handleRideConfirm);
+  socket.on('ride-started', handleRideStarted);
 
-  })
+  return () => {
+    socket.off('ride-confrim', handleRideConfirm);
+    socket.off('ride-started', handleRideStarted);
+  };
+}, [socket, navigate]);
 
  
 

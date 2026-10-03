@@ -126,9 +126,9 @@ function initializeSocket(server) {
     // ✅ Chat message between sockets
     socket.on('chat-message', ({ toSocketId, message }) => {
       console.log(`[Socket] 💬 Chat from ${socket.id} to ${toSocketId}:`, message);
-      sendMessage(toSocketId, 'chat-message', {
-        from: socket.id,
-        message
+      sendMessage(toSocketId, {
+        event: 'chat-message',
+        data: { from: socket.id, message }
       });
     });
   });

@@ -1,12 +1,11 @@
 import React from 'react'; 
 import { Routes, Route } from 'react-router-dom'
 import Start from './Pages/Start.jsx'
-import UserLogin from './pages/UserLogin.jsx'
+import UserLogin from './Pages/UserLogin.jsx'
 import UserSignup from './Pages/UserSignup.jsx'
 import CaptainLogin from './Pages/CaptainLogin.jsx'
-import CaptainSignup from './pages/CaptainSignup.jsx'
+import CaptainSignup from './Pages/CaptainSignup.jsx'
 import Home from './Pages/Home.jsx'
-import { UserProvider } from './context/UserContext.jsx';
 import UserProtectWrapper from './Pages/UserProtectWrapper.jsx';
 import UserLogout from './Pages/UserLogout.jsx';
 import CaptainHome from './Pages/CaptainHome.jsx';
