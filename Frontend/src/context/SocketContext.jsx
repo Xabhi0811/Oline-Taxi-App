@@ -1,11 +1,8 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-import { UserDataContext } from '../context/UserContext';
+import { UserDataContext, SocketContext } from './contexts';
 
 const SOCKET_SERVER_URL = `${import.meta.env.VITE_SOCKET_URL}`;
-
-export const SocketContext = createContext();
-export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
   const socketRef = useRef();

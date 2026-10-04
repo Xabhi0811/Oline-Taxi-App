@@ -1,12 +1,12 @@
 import React, { useEffect, useContext, useState } from 'react';
-import { CaptainDataContext } from '../context/CaptainContext';
+import { CaptainDataContext } from '../context/contexts';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const CaptainProtectWrapper = ({ children }) => {
   const token = localStorage.getItem('captainToken'); // ✅ Fix token key
   const navigate = useNavigate();
-  const { captain, setCaptain } = useContext(CaptainDataContext);
+  const { setCaptain } = useContext(CaptainDataContext);
   const [isLoading, setIsLoading] = useState(true); // ✅ Fix from destructuring bug
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const CaptainProtectWrapper = ({ children }) => {
       .finally(() => {
         setIsLoading(false); // ✅ Always stop loading after attempt
       });
-  }, [token]);
+  }, [token, navigate, setCaptain]);
 
   if (isLoading) {
     return <div className="text-center text-xl mt-10">Loading...</div>;

@@ -202,7 +202,7 @@ DB_CONNECT=mongodb://localhost:27017/uber-video
 JWT_SECRET=mySuperSecretKey12345
 
 # Google Maps API Key
-GOOGLE_MAPS_API=AIzaSyDG2CVFQZNnAb8kU_J7N2iYjrE0LwWk1EA
+GOOGLE_MAPS_API=<your-google-maps-api-key>
 ```
 
 ### Important Notes:

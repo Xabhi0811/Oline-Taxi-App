@@ -7,8 +7,7 @@ import RidePopUp from '../componets/RidePopUp'
  import { useLayoutEffect } from 'react';
  import gsap from 'gsap'
 import ConfrimRidePopUp from '../componets/ConfirmRidePopUp'
-import {SocketContext} from '../context/SocketContext'
-import { CaptainDataContext } from '../context/CaptainContext'
+import {SocketContext, CaptainDataContext} from '../context/contexts'
 
 
 
@@ -23,8 +22,6 @@ const CaptainHome = ( ) => {
   
   const {socket} = useContext(SocketContext)
   const {captain} = useContext(CaptainDataContext)
-  const [isSocketConnected, setIsSocketConnected] = useState(false);
-  const [location, setLocation] = useState({ lat: null, lng: null });
    // ride me data wla 
    const [ride , setRide] = useState(null)
 
@@ -36,7 +33,6 @@ useEffect(() => {
 
   const onConnect = () => {
     console.log("✅ Socket connected:", socket.id);
-    setIsSocketConnected(true);
 
     // Identify captain
     socket.emit("json", {
@@ -53,7 +49,6 @@ useEffect(() => {
   };
 
   const onDisconnect = () => {
-    setIsSocketConnected(false);
     console.log("🔌 Socket disconnected");
   };
 
@@ -79,7 +74,6 @@ const watchId = navigator.geolocation.watchPosition(
       console.log("✅ Position fetched:", position);
       console.log("🧠 captain:", captain);
     const { latitude, longitude } = position.coords;
-    setLocation({ lat: latitude, lng: longitude });
 
     if (socket && socket.connected && captain?._id) {
       socket.emit("update-location-captain", {
@@ -124,7 +118,7 @@ useEffect(() => {
 
 
  async function confirmRide() {
-  const response = await axios.post(
+  await axios.post(
     `${import.meta.env.VITE_BACKEND_URL}/rides/confirm`,
     {
       rideId: ride._id,

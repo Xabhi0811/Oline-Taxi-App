@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom'
-import React, { use, useState } from 'react'
-import { CaptainDataContext } from '../context/CaptainContext';
+import React, { useState } from 'react'
+import { CaptainDataContext } from '../context/contexts';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -14,7 +14,6 @@ const CaptainSignup = () => {
      const [password, setPassword] = useState('');
      const [firstName, setFirstName] = useState('');
      const [lastName, setLastName] = useState('');
-     const [userData ,setUserData] = useState({});
 
 
      const [vehicleType, setVehicleType] = useState('');
@@ -24,7 +23,7 @@ const CaptainSignup = () => {
    
      
 
-     const { captain , setCaptain } = React.useContext(CaptainDataContext);
+     const { setCaptain } = React.useContext(CaptainDataContext);
    
      const submitHandler = async (e) => {
        e.preventDefault();
@@ -162,7 +161,7 @@ const CaptainSignup = () => {
             Create Captain Account
           </button>
   
-           <p className='text-center'> Already have a account ? <Link to='/capatain-login' className='text-blue-600'>Login here </Link></p>
+           <p className='text-center'> Already have a account ? <Link to='/captain-login' className='text-blue-600'>Login here </Link></p>
   
         </form>
   

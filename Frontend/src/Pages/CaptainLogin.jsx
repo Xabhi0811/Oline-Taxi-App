@@ -1,13 +1,13 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { CaptainDataContext } from '../context/CaptainContext';
+import { CaptainDataContext } from '../context/contexts';
 
 const CaptainLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { captain, setCaptain } = React.useContext(CaptainDataContext);
+  const { setCaptain } = React.useContext(CaptainDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {

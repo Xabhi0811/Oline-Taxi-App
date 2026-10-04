@@ -3,7 +3,7 @@
  const {body , query} = require('express-validator')
  const rideController = require ('../controllers/ride.controller')
  const authMiddleware = require('../models/middlewares/auth.middleware')
- const MapService = require('../services/map.service'); // ✅ FIXED
+const { getFare } = require('../services/fare.util');
 //const { authCaptain } = require('../middleware/auth.middleware');
 
 
@@ -19,20 +19,7 @@
  )
 
 
- function calculateFare(distanceInMeters) {
-  const baseFare = 30; // starting fare in ₹
-  const perKmRate = 10; // ₹ per km
-
-  const distanceInKm = distanceInMeters / 1000;
-  const totalFare = baseFare + (distanceInKm * perKmRate);
-
-  return Math.round(totalFare); // round to nearest ₹
-}
-
-
-
-
-router.get('/get-fare', async (req, res) => {
+router.get('/get-fare', authMiddleware.authUser, async (req, res) => {
   try {
     const { pickup, destination } = req.query;
     console.log("Pickup:", pickup);
@@ -42,16 +29,8 @@ router.get('/get-fare', async (req, res) => {
       return res.status(400).json({ message: "Pickup and destination are required" });
     }
 
-    const distanceTime = await MapService.getDistanceTime(pickup, destination);
-    console.log("DistanceTime:", distanceTime);
-
-    const fare = calculateFare(distanceTime.distance.value);
-
-    res.json({
-      distance: distanceTime.distance,
-      duration: distanceTime.duration,
-      fare
-    });
+    const fare = await getFare(pickup, destination);
+    res.json({ fare });
 
   } catch (error) {
     console.error("💥 Fare route error:", error.message);

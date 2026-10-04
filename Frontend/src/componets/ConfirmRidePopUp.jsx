@@ -14,7 +14,7 @@ const ConfirmRidePopUp = (props) => {
       params: {rideId: props.ride._id,
       otp: otp} ,
        headers:{
-          Authorization :`Bearer ${localStorage.getItem('token')}`
+          Authorization :`Bearer ${localStorage.getItem('captainToken')}`
          }
     })
 

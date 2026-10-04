@@ -23,6 +23,12 @@
         required: true,
     },
 
+    vehicleType:{
+        type: String,
+        enum: ['auto', 'car', 'bike'],
+        required: true,
+    },
+
     fare:{
         type: Number,
         required: true,

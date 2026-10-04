@@ -8,7 +8,6 @@ console.log("✅ blacklistToken.model.js loaded successfully");
 
 
 module.exports.registerUser = async (req, res, next) => {
-    console.log("🧾 req.body:", req.body);
     const error = validationResult(req);
     if (!error.isEmpty()) {
         console.log("❌ Validation Errors:", error.array());
@@ -18,7 +17,6 @@ module.exports.registerUser = async (req, res, next) => {
     const { email, password } = req.body;
     const { firstName, lastName } = req.body.fullName || {};
 
-    console.log("Extracted:", firstName, lastName, email, password);
 
     // ✅ Fix variable names here
     if (!firstName || !lastName || !email || !password) {

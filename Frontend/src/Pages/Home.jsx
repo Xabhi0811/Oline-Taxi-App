@@ -1,4 +1,4 @@
-import React, { use, useContext, useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useState } from 'react'
 import { useLayoutEffect } from 'react';
 import gsap from 'gsap'
@@ -9,8 +9,7 @@ import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
 import WaitingForDriver from '../componets/WaitingForDriver';
 import axios from 'axios'
-import { SocketContext } from '../context/SocketContext'; 
-import { UserDataContext } from '../context/UserContext';
+import { SocketContext, UserDataContext } from '../context/contexts';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -66,7 +65,7 @@ useEffect(() => {
     setRide(ride);
   };
 
-  const handleRideStarted = (ride) => {
+  const handleRideStarted = () => {
     setWaitingForDriver(false);
     navigate('/riding');
   };
@@ -238,12 +237,12 @@ async function findTrip() {
       }
     );
 
-    const baseFare = response.data.fare; // 👈 Extract base fare from backend
+    const calculatedFare = response.data.fare;
 
     const fareData = {
-      car: `₹${Math.ceil(baseFare * 1.5)}`,
-      bike: `₹${Math.ceil(baseFare * 0.8)}`,
-      auto: `₹${Math.ceil(baseFare * 1.0)}`
+      car: `₹${Math.ceil(calculatedFare.car)}`,
+      bike: `₹${Math.ceil(calculatedFare.bike)}`,
+      auto: `₹${Math.ceil(calculatedFare.auto)}`
     };
 
     setFare(fareData); // 👈 Set the fare for VehiclePanel

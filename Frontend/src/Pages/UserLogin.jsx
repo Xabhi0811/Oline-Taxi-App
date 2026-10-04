@@ -1,15 +1,14 @@
 import React, { useState, useContext } from 'react'
 import { Link } from 'react-router-dom'
-import { UserDataContext } from '../context/UserContext'
+import { UserDataContext } from '../context/contexts'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const UserLogin = () => {
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
-  const [ userData, setUserData ] = useState({})
 
-  const { user, setUser } = useContext(UserDataContext)
+  const { setUser } = useContext(UserDataContext)
   const navigate = useNavigate()
 
 

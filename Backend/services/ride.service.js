@@ -52,18 +52,14 @@ module.exports.confirmRide = async ({ rideId, captain  }) => {
         throw new Error('Ride id is required');
     }
 
-    await rideModule.findByIdAndUpdate(
-        { _id: rideId },
-        {
-            status: 'accepted',
-            captain: captain
-        } 
-    );
-
-    const ride = await rideModule.findOne({ _id: rideId }).populate('user').populate('captain').select('+Otp')
+    const ride = await rideModule.findOneAndUpdate(
+        { _id: rideId, status: 'pending' },
+        { $set: { status: 'accepted', captain } },
+        { new: true }
+    ).populate('user').populate('captain').select('+Otp');
     
     if (!ride) {
-        throw new Error('Ride not found');
+        throw new Error('Ride is unavailable or already accepted');
     }
 
     return ride;
@@ -76,33 +72,19 @@ module.exports.startRide = async ({rideId , otp , captain}) =>{
         throw new Error('Ride id aur uski otp chaiye')
     }
 
-    const ride = await rideModule.findOne({
-        _id: rideId
-    }).populate('user').populate('captain').select('+Otp')
+    const ride = await rideModule.findOneAndUpdate({
+        _id: rideId,
+        captain: captain._id,
+        status: 'accepted',
+        Otp: otp.toString(),
+    }, {
+        $set: { status: 'ongoing' }
+    }, { new: true }).populate('user').populate('captain').select('+Otp');
 
 
     if(!ride){
-        throw new Error(' ride idhar nhi hai')
+        throw new Error('Ride, captain, or OTP is invalid');
     }
-
-    if(ride.status !== 'accepted'){
-        throw new Error('ride not mai nhi le rha ')
-    }
-
-    if(ride.Otp !== otp.toString()){
-     throw  new Error ('opt galat hai')
-    }
-
-    await rideModule.findOneAndUpdate({
-        _id: rideId
-    },{
-        status : 'ongoing'
-    })
-
-    sendMessage(ride.user.socketID,{
-        event: 'ride-started',
-        data: ride 
-    })
 
     return ride;
 }
