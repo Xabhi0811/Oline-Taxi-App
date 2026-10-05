@@ -52,4 +52,5 @@ userSchema.statics.hashPassword = async function (password) {
 };
 
 const userModel = mongoose.model('user', userSchema);
+userSchema.set('toJSON', { transform: (_doc, data) => { delete data.password; return data; } });
 module.exports = userModel;

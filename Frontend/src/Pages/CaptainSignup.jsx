@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { CaptainDataContext } from '../context/contexts';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiError } from '../utils/apiError';
 
 const CaptainSignup = () => {
 
@@ -11,6 +12,8 @@ const CaptainSignup = () => {
 
 
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
      const [password, setPassword] = useState('');
      const [firstName, setFirstName] = useState('');
      const [lastName, setLastName] = useState('');
@@ -27,6 +30,8 @@ const CaptainSignup = () => {
    
      const submitHandler = async (e) => {
        e.preventDefault();
+       setError('');
+       setBusy(true);
        const captainData = {
        fullname:{
         firstname: firstName,
@@ -43,6 +48,7 @@ const CaptainSignup = () => {
  
       }
        
+  try {
   const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/captains/register`, captainData);
 
      
@@ -61,6 +67,9 @@ const CaptainSignup = () => {
        setVehicleColor('');
         setVehiclePlate('');
         setVehicleType('');
+      } catch (err) {
+        setError(apiError(err, 'Unable to create your account. Please try again.'));
+      } finally { setBusy(false); }
  
     }
   return (
@@ -68,6 +77,7 @@ const CaptainSignup = () => {
        <div> 
         <img  className='w-25 mb-7' src="https://static.vecteezy.com/system/resources/previews/027/127/451/non_2x/uber-logo-uber-icon-transparent-free-png.png" alt="" />
         <form onSubmit={(e)=>submitHandler(e)}>
+          {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
   
            <h3 className='text-base font-medium mb-2'>what is your name </h3>
            <div className='flex gap-4 mb-6 '>
@@ -121,7 +131,6 @@ const CaptainSignup = () => {
                   <option value="car">Car</option>
                   <option value="auto">Auto</option>
                   <option value="bike">bike</option>
-                  <option value="truck">Truck</option>
                 </select>
 
                 <input 
@@ -156,7 +165,7 @@ const CaptainSignup = () => {
           
 
            
-          <button 
+          <button disabled={busy}
           className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg placeholder:text-base'>
             Create Captain Account
           </button>

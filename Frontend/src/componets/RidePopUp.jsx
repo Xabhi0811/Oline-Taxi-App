@@ -49,7 +49,6 @@ const RidePopUp = (props) => {
           
           <div className='mt-5 flex w-full  justify-between  items-center'>
             <button  onClick={()=>{
-            props.setConfirmRidePopUpPanel(true)
             props.ConfrimRide()
           }}
         

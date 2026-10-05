@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { apiError } from '../utils/apiError';
 import { CaptainDataContext } from '../context/contexts';
 
 const CaptainLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const { setCaptain } = React.useContext(CaptainDataContext);
   const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setError('');
+    setBusy(true);
     const captain = {
       email: email,
       password: password
@@ -28,9 +33,8 @@ const CaptainLogin = () => {
         setPassword('');
       }
     } catch (error) {
-      console.error("Login failed", error);
-      alert("Invalid credentials or server error.");
-    }
+      setError(apiError(error, 'Unable to log in. Please try again.'));
+    } finally { setBusy(false); }
   };
 
   return (
@@ -42,6 +46,7 @@ const CaptainLogin = () => {
           alt="Uber Logo" 
         />
         <form onSubmit={submitHandler}>
+          {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
           <h3 className='text-lg font-medium mb-2'>What is your email</h3>
           <input 
             required 
@@ -62,7 +67,7 @@ const CaptainLogin = () => {
             placeholder='password'
           />
           
-          <button 
+          <button disabled={busy}
             className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg'>
             Login
           </button>

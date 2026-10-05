@@ -9,7 +9,7 @@ import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
 import WaitingForDriver from '../componets/WaitingForDriver';
 import axios from 'axios'
-import { SocketContext, UserDataContext } from '../context/contexts';
+import { SocketContext } from '../context/contexts';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -33,48 +33,42 @@ const Home = () => {
   const [fare , setFare] = useState({})
   const [vehicleType , setVehicleType] = useState(null)
   const [ ride , setRide] = useState(null)
+  const [tripError, setTripError] = useState('')
+  const [findingTrip, setFindingTrip] = useState(false)
 
   const navigate = useNavigate()
 
 
-  const {socket ,sendMessage } = useContext(SocketContext)
-  const {user} = useContext(UserDataContext)
+  const {socket} = useContext(SocketContext)
 
 
 
 
 
 
-useEffect(() => {
-  if (sendMessage && user && user._id) {
-    sendMessage('json',{
-      
-      userType: 'user',
-      userId: user._id,
-    });
-  }
-}, [sendMessage, user]);
 
 
 useEffect(() => {
   if (!socket) return;
 
   const handleRideConfirm = (ride) => {
+    sessionStorage.setItem('userRideId', ride._id);
     setVehicleFound(false);
     setWaitingForDriver(true);
     setRide(ride);
   };
 
-  const handleRideStarted = () => {
+  const handleRideStarted = (ride) => {
     setWaitingForDriver(false);
-    navigate('/riding');
+    sessionStorage.setItem('userRideId', ride._id);
+    navigate('/riding', { state: { ride } });
   };
 
-  socket.on('ride-confrim', handleRideConfirm);
+  socket.on('ride-confirmed', handleRideConfirm);
   socket.on('ride-started', handleRideStarted);
 
   return () => {
-    socket.off('ride-confrim', handleRideConfirm);
+    socket.off('ride-confirmed', handleRideConfirm);
     socket.off('ride-started', handleRideStarted);
   };
 }, [socket, navigate]);
@@ -220,8 +214,12 @@ useLayoutEffect(() => {
  }, [waitingForDriver])
 
 async function findTrip() {
-  setVehiclePanel(true);
-  setPanelOpen(false);
+  setTripError('');
+  if (pickup.trim().length < 3 || destination.trim().length < 3) {
+    setTripError('Enter a pickup and destination of at least three characters.');
+    return;
+  }
+  setFindingTrip(true);
 
   try {
     const response = await axios.get(
@@ -245,10 +243,13 @@ async function findTrip() {
       auto: `₹${Math.ceil(calculatedFare.auto)}`
     };
 
-    setFare(fareData); // 👈 Set the fare for VehiclePanel
+    setFare(fareData);
+    setVehiclePanel(true);
+    setPanelOpen(false);
   } catch (error) {
-    console.error('Error fetching fare:', error.message);
-    // Optionally show error to user
+    setTripError(error.response?.data?.message || 'Unable to find a trip. Try again.');
+  } finally {
+    setFindingTrip(false);
   }
 }
  
@@ -266,7 +267,9 @@ async function createRide() {
       }
     }
   );
-  console.log(response.data);
+  setRide(response.data);
+  sessionStorage.setItem('userRideId', response.data._id);
+  return response.data;
 }
 
 
@@ -329,7 +332,8 @@ async function createRide() {
  
 
         </form>
-        <button onClick={findTrip} className='bg-black text-white px-4 rounded-lg mt-3 h-10 w-full'>Find Trip </button>
+        <button disabled={findingTrip} onClick={findTrip} className='bg-black text-white px-4 rounded-lg mt-3 h-10 w-full'>{findingTrip ? 'Finding trip...' : 'Find Trip'}</button>
+        {tripError && <p role="alert" className="mt-2 text-sm text-red-700">{tripError}</p>}
         
         </div>
         <div  ref={panelRef} className="h-0 bg-white">

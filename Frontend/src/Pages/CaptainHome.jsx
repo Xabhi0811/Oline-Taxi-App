@@ -24,82 +24,25 @@ const CaptainHome = ( ) => {
   const {captain} = useContext(CaptainDataContext)
    // ride me data wla 
    const [ride , setRide] = useState(null)
+   const [rideError, setRideError] = useState('')
 
-// Track when socket is ready
-
-// ✅ 1st: Manage socket connection and identification
+// Location belongs to the authenticated socket; the client does not choose an account ID.
 useEffect(() => {
-  if (!captain || !captain._id) return;
-
-  const onConnect = () => {
-    console.log("✅ Socket connected:", socket.id);
-
-    // Identify captain
-    socket.emit("json", {
-      userId: captain._id,
-      userType: "captain",
-    });
-
-    // Update backend with socket ID
-    socket.emit("update-captain-socket-id", {
-     //captainId: captain._id,
-      userId: captain._id,
-      socketId: socket.id,
+  if (!socket || !captain?._id || !navigator.geolocation) return;
+  const sendLocation = position => {
+    socket.emit('update-location-captain', {
+      location: { lat: position.coords.latitude, lng: position.coords.longitude }
     });
   };
-
-  const onDisconnect = () => {
-    console.log("🔌 Socket disconnected");
-  };
-
-  socket.on("connect", onConnect);
-  socket.on("disconnect", onDisconnect);
-
-  return () => {
-    socket.off("connect", onConnect);
-    socket.off("disconnect", onDisconnect);
-  };
-}, [socket, captain]);
-
-
-// ✅ 2nd: Watch location and send to backend
-useEffect(() => {
-  if (!("geolocation" in navigator)) {
-    console.warn("🚫 Geolocation not supported.");
-    return;
-  }
-const watchId = navigator.geolocation.watchPosition(
-  (position) => {
-    console.log("✅ Position fetched:", position);
-      console.log("✅ Position fetched:", position);
-      console.log("🧠 captain:", captain);
-    const { latitude, longitude } = position.coords;
-
-    if (socket && socket.connected && captain?._id) {
-      socket.emit("update-location-captain", {
-         userId: captain._id,
-        location: { lat: latitude, lng: longitude },
-      });
-      console.log("📤 Sent to backend:", { lat: latitude, lng: longitude });
-    }
-  },
-  (error) => {
-    console.error("❌ Location error:", error.message);
-  },
-  {
-    enableHighAccuracy: true, // 🔁 GPS
-    timeout: 20000,           // ⏳ 20s
-    maximumAge: 20000            // 🔄 No caching
-  }
-);
-
-
+  const options = { enableHighAccuracy: true, timeout: 20000, maximumAge: 20000 };
+  const locate = () => navigator.geolocation.getCurrentPosition(sendLocation, () => {}, options);
+  const watchId = navigator.geolocation.watchPosition(sendLocation, () => {}, options);
+  socket.on('ready', locate);
   return () => {
     navigator.geolocation.clearWatch(watchId);
+    socket.off('ready', locate);
   };
-}, [socket, captain]);
-
-
+}, [socket, captain?._id]);
 useEffect(() => {
   if (!socket) return;
 
@@ -118,7 +61,9 @@ useEffect(() => {
 
 
  async function confirmRide() {
-  await axios.post(
+  setRideError('');
+  try {
+  const response = await axios.post(
     `${import.meta.env.VITE_BACKEND_URL}/rides/confirm`,
     {
       rideId: ride._id,
@@ -133,6 +78,11 @@ useEffect(() => {
 
   setRidePopUpPanel(false);
   setConfirmRidePopUpPanel(true);
+  setRide(response.data);
+  sessionStorage.setItem('captainRideId', response.data._id);
+  } catch (error) {
+    setRideError(error.response?.data?.message || 'Unable to accept ride. Try again.');
+  }
 }
 
 
@@ -191,6 +141,7 @@ useEffect(() => {
     setConfirmRidePopUpPanel={setConfirmRidePopUpPanel} 
     ConfrimRide={confirmRide}
   />
+  {rideError && <p role="alert" className="text-red-700">{rideError}</p>}
 </div>
 
 

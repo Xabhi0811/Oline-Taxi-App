@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { apiError } from '../utils/apiError'
 import { UserDataContext } from '../context/contexts'
 
 
@@ -10,6 +11,8 @@ const UserSignup = () => {
   const [ password, setPassword ] = useState('')
   const [ firstName, setFirstName ] = useState('')
   const [ lastName, setLastName ] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const navigate = useNavigate()
 
@@ -22,6 +25,8 @@ const UserSignup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault()
+    setError('');
+    setBusy(true);
     const newUser = {
       fullName: {
         firstName: firstName,
@@ -31,6 +36,7 @@ const UserSignup = () => {
       password: password
     }
 
+    try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users/register`, newUser)
 
     if (response.status === 201) {
@@ -45,6 +51,9 @@ const UserSignup = () => {
     setFirstName('')
     setLastName('')
     setPassword('')
+    } catch (err) {
+      setError(apiError(err, 'Unable to create your account. Please try again.'));
+    } finally { setBusy(false); }
 
   }
   return (
@@ -57,6 +66,7 @@ const UserSignup = () => {
             submitHandler(e)
           }}>
 
+            {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
             <h3 className='text-lg w-1/2  font-medium mb-2'>What's your name</h3>
             <div className='flex gap-4 mb-7'>
               <input
@@ -105,7 +115,7 @@ const UserSignup = () => {
               placeholder='password'
             />
 
-            <button
+            <button disabled={busy}
               className='bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base'
             >Create account</button>
 

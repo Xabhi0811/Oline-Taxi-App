@@ -10,7 +10,6 @@ module.exports.registerCaptain = async (req, res) => {
 
     const errors = validationResult(req);
 if (!errors.isEmpty()) {
-  console.log('❌ Validation errors:', errors.array());
   return res.status(400).json({ errors: errors.array() });
 }
 
@@ -88,8 +87,8 @@ module.exports.getCaptainProfile = async (req, res) => {
 
 
 module.exports.logoutCaptain = async (req, res) => {
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-  await blacklistTokenModel.create({ token });
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
+  await blacklistTokenModel.updateOne({ token }, { $setOnInsert: { token } }, { upsert: true });
 
     res.clearCookie('token');
     res.status(200).json({ message: 'Logged out successfully' });

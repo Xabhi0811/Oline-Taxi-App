@@ -10,7 +10,6 @@ console.log("✅ blacklistToken.model.js loaded successfully");
 module.exports.registerUser = async (req, res, next) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        console.log("❌ Validation Errors:", error.array());
         return res.status(400).json({ error: error.array() });
     }
 
@@ -77,7 +76,7 @@ module.exports.getUserProfile = async (req, res) => {
 
 module.exports.logoutUser = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
 
     if (!token) {
       return res.status(400).json({ message: 'Logout failed: No token provided' });

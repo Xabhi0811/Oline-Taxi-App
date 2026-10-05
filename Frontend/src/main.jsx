@@ -11,11 +11,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <CaptainContext>
       <UserProvider>
-        <SocketProvider> {/* ✅ SocketProvider comes before App */}
-          <BrowserRouter>
+        <BrowserRouter>
+          <SocketProvider>
             <App /> {/* ✅ Render App ONLY ONCE */}
-          </BrowserRouter>
-        </SocketProvider>
+          </SocketProvider>
+        </BrowserRouter>
       </UserProvider>
     </CaptainContext>
   </StrictMode>

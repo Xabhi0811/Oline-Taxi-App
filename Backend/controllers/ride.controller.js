@@ -1,121 +1,94 @@
- const rideService = require('../services/ride.service')
- const {validationResult} = require('express-validator')
- const mapService = require('../services/map.service')
- const {sendMessage} = require('../socket');
-const rideModule = require('../models/ride.module');
- 
+const rideService = require('../services/ride.service');
+const { validationResult } = require('express-validator');
+const mapService = require('../services/map.service');
+const { sendMessage } = require('../socket');
+
+function invalid(req, res) {
+  const errors = validationResult(req);
+  if (errors.isEmpty()) return false;
+  res.status(400).json({ errors: errors.array() });
+  return true;
+}
+
+function publicRide(ride) {
+  const data = ride.toObject ? ride.toObject() : { ...ride };
+  delete data.Otp;
+  return data;
+}
+
 module.exports.createRide = async (req, res) => {
-  const error = validationResult(req);
-  if (!error.isEmpty()) {
-    return res.status(400).json({ error: error.array() });
-  }
-
-  const { userId, pickup, destination, vehicleType } = req.body;
-
+  if (invalid(req, res)) return;
+  const { pickup, destination, vehicleType } = req.body;
   try {
-    const ride = await rideService.createRide({
-      user: req.user._id,
-      pickup,
-      destination,
-      vehicleType,
+    const coordinates = await mapService.getAddressCoordinates(pickup);
+    if (!coordinates) return res.status(422).json({ message: 'Pickup location could not be found' });
+    const captains = await mapService.getCaptainInTheRadius(coordinates.lat, coordinates.lng, 5);
+    const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
+    // The authenticated user's profile is already available; do not perform a fallible query after saving.
+    const data = { ...publicRide(ride), user: req.user.toObject() };
+    captains.filter(c => c.vehicle.vehicleType === vehicleType).forEach(c => {
+      sendMessage(c.socketId, { event: 'new-ride', data });
     });
-
-    const pickupCoordinates = await mapService.getAddressCoordinates(pickup);
-    const captainIdRadius = await mapService.getCaptainInTheRadius(
-      pickupCoordinates.lat,
-      pickupCoordinates.lng,
-      5
-    );
-
-    ride.Otp = "";
-
-    console.log("🧭 Nearby Captains Found:", captainIdRadius);
-
-
-    const rideWithUser = await rideModule.findOne({_id: ride._id}).populate('user')
-
-    captainIdRadius.map((captain) => {
-      console.log(`📡 Emitting to captain: ${captain._id}, socketId: ${captain.socketId}`);
-      sendMessage(captain.socketId, {
-        event: "new-ride",
-        data: rideWithUser,
-      });
-    });
-
-    // ✅ Only send response once all async work is done
     return res.status(201).json(ride);
-  } catch (err) {
-    console.error("❌ Error in createRide:", err);
-    return res.status(500).json({ message: err.message });
+  } catch (error) {
+    return res.status(error.status || 502).json({ message: 'Unable to create ride. Check the locations and try again.' });
   }
 };
 
- 
-module.exports.getFare =async (req, res) =>{
-   
-   const error = validationResult(req);
-   if(!error.isEmpty())
-   {
-      return res.status(400).json({error: error.array()})
-   }
+module.exports.getFare = async (req, res) => {
+  if (invalid(req, res)) return;
+  try {
+    const fare = await rideService.getFare(req.query.pickup, req.query.destination);
+    res.json({ fare });
+  } catch {
+    res.status(502).json({ message: 'Unable to calculate fare. Check the locations and try again.' });
+  }
+};
 
-   const {pickup , destination} = req.query
-   try{
-      const fare = await rideService.getFare(pickup , destination)
-      return res.status(200).json(fare)
-   }catch(err){
-      return res.status(500).json({message: err.message})
-   }
+module.exports.confirmRide = async (req, res) => {
+  if (invalid(req, res)) return;
+  try {
+    const ride = await rideService.confirmRide({ rideId: req.body.rideId, captain: req.captain._id });
+    sendMessage(ride.user.socketID, { event: 'ride-confirmed', data: ride });
+    res.json(publicRide(ride));
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.status ? error.message : 'Unable to accept ride' });
+  }
+};
 
-}
+module.exports.startRide = async (req, res) => {
+  if (invalid(req, res)) return;
+  try {
+    const { rideId, otp } = req.method === 'GET' ? req.query : req.body;
+    const ride = await rideService.startRide({ rideId, otp, captain: req.captain });
+    const data = publicRide(ride);
+    sendMessage(ride.user.socketID, { event: 'ride-started', data });
+    res.json(data);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.status ? error.message : 'Unable to start ride' });
+  }
+};
 
+module.exports.endRide = async (req, res) => {
+  if (invalid(req, res)) return;
+  try {
+    const ride = await rideService.endRide({ rideId: req.body.rideId, captain: req.captain });
+    sendMessage(ride.user.socketID, { event: 'ride-ended', data: ride });
+    res.json(ride);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.status ? error.message : 'Unable to finish ride' });
+  }
+};
 
-module.exports.confirmRide = async (req, res) =>{
-   const error = validationResult(req)
-   if(!error.isEmpty()){
-      return res.status(400).json({error: error.array()})
-   }
-   const {rideId} = req.body
-    
-   try{
-      const ride = await rideService.confirmRide({rideId, captain: req.captain._id })
-
-
-       sendMessage( ride.user.socketID,{
-         event: "ride-confrim",
-         data: ride 
-       })
-
-
-
-      return res.status(200).json(ride)
-   }catch(err){
-      return res.status(500).json({message: err.message})
-   }
-
-   
-}
-
-
-
-module.exports.startRide = async (req , res) =>{
-   const error = validationResult(req)
-   if(!error.isEmpty()){
-    return res.status(400).json({ error : error.array()})
-   }
-    
-   const {rideId , otp} = req.query
-
-   try{
-    const ride = await rideService.startRide({ rideId , otp , captain: req.captain })
-  
-    sendMessage(ride.user.socketID,{
-      event: "ride-started",
-      data: ride
-    })
-
-    return res.status(200).json(ride)
-   }catch(err){
-    return res.status(500).json({message: err.message})
-   }
-}
+module.exports.getRide = async (req, res) => {
+  if (invalid(req, res)) return;
+  const Ride = require('../models/ride.module');
+  const filter = { _id: req.params.rideId };
+  if (req.user) filter.user = req.user._id;
+  else filter.captain = req.captain._id;
+  const query = Ride.findOne(filter).populate('user').populate('captain');
+  if (req.user) query.select('+Otp');
+  const ride = await query;
+  if (!ride) return res.status(404).json({ message: 'Ride not found' });
+  res.json(ride);
+};

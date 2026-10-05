@@ -5,7 +5,7 @@ const blacklistTokenModel = require('../blacklistToken.model');
 
 module.exports.authUser = async (req, res, next) => {
   try {
-    const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized access: No token provided' });
     }
@@ -23,7 +23,6 @@ module.exports.authUser = async (req, res, next) => {
     }
 
     req.user = user;
-    console.log('✅ Authenticated User:', req.user);
 
     next();
   } catch (err) {
@@ -33,17 +32,17 @@ module.exports.authUser = async (req, res, next) => {
 };
 
 module.exports.authCaptain = async (req, res, next) => {
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1] || req.cookies.token;
   if (!token) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  try {
   const isBlacklisted = await blacklistTokenModel.findOne({ token });
   if (isBlacklisted) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const captain = await captainModel.findById(decoded._id);
 
@@ -54,7 +53,6 @@ module.exports.authCaptain = async (req, res, next) => {
     req.captain = captain; // ✅ FIXED
     next();
   } catch (err) {
-    console.error(err); // Optional: log for debugging
     res.status(401).json({ message: 'Unauthorized access: Invalid or expired token' });
   }
 };

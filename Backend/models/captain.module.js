@@ -93,6 +93,7 @@ captainSchema.methods.generateAuthToken = function() {
             return await bcrypt.hash(password, 10);
         }
 
+    captainSchema.set('toJSON', { transform: (_doc, data) => { delete data.password; return data; } });
     const captainModel = mongoose.model('Captain', captainSchema)
 
     module.exports = captainModel;

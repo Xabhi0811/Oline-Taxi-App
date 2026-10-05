@@ -3,10 +3,13 @@ import { Link } from 'react-router-dom'
 import { UserDataContext } from '../context/contexts'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { apiError } from '../utils/apiError'
 
 const UserLogin = () => {
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const { setUser } = useContext(UserDataContext)
   const navigate = useNavigate()
@@ -15,12 +18,15 @@ const UserLogin = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setError('');
+    setBusy(true);
 
     const userData = {
       email: email,
       password: password
     }
 
+    try {
     const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/users/login`, userData)
 
     if (response.status === 200) {
@@ -33,6 +39,9 @@ const UserLogin = () => {
 
     setEmail('')
     setPassword('')
+    } catch (err) {
+      setError(apiError(err, 'Unable to log in. Please try again.'));
+    } finally { setBusy(false); }
   }
 
   return (
@@ -43,6 +52,7 @@ const UserLogin = () => {
         <form onSubmit={(e) => {
           submitHandler(e)
         }}>
+          {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
           <h3 className='text-lg font-medium mb-2'>What's your email</h3>
           <input
             required
@@ -67,7 +77,7 @@ const UserLogin = () => {
             placeholder='password'
           />
 
-          <button
+          <button disabled={busy}
             className='bg-[#111] text-white font-semibold mb-3 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base'
           >Login</button>
 

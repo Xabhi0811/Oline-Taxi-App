@@ -21,13 +21,13 @@ const App = () => {
       <Route path="/" element={<Start/>} /> 
       <Route path="/login" element={<UserLogin />} />
       <Route path="/signup" element={<UserSignup />} />
-      <Route path='/riding' element={<Riding/>}/>
+      <Route path='/riding' element={<UserProtectWrapper><Riding/></UserProtectWrapper>}/>
       <Route path="/captain-login" element={<CaptainLogin />} />
      <Route path="/captain-Signup" element={<CaptainSignup />} />
       <Route path='/home' element={<UserProtectWrapper>{<Home/>}</UserProtectWrapper>}/>
        <Route path='/users/logout' element={<UserProtectWrapper>{<UserLogout/>}</UserProtectWrapper>}/>
        <Route path='/captain-home' element={<CaptainProtectWrapper><CaptainHome/></CaptainProtectWrapper>} />
-       <Route path='/captain-riding' element={<CaptainRiding/>} />
+       <Route path='/captain-riding' element={<CaptainProtectWrapper><CaptainRiding/></CaptainProtectWrapper>} />
     </Routes>
   )
 }

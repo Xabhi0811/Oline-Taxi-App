@@ -1,157 +1,68 @@
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const userModel = require('./models/user.model');
 const captainModel = require('./models/captain.module');
+const blacklistTokenModel = require('./models/blacklistToken.model');
 
 let io;
-const connectedSockets = new Map();
 
 function initializeSocket(server) {
   io = new Server(server, {
-    cors: {
-      origin: [
-        'http://localhost:5173',
-        'https://lx36v5dk-5173.inc1.devtunnels.ms',
-        'https://lx36v5dk-4000.inc1.devtunnels.ms'
-      ],
-      credentials: true
+    cors: { origin: ['http://localhost:5173', 'http://127.0.0.1:5173', process.env.FRONTEND_URL].filter(Boolean), credentials: true }
+  });
+  io.use(async (socket, next) => {
+    try {
+      const { token, role } = socket.handshake.auth || {};
+      if (!token || !['user', 'captain'].includes(role)) throw new Error('Unauthorized');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (await blacklistTokenModel.exists({ token })) throw new Error('Unauthorized');
+      const model = role === 'captain' ? captainModel : userModel;
+      if (!await model.exists({ _id: decoded._id })) throw new Error('Unauthorized');
+      socket.data.identity = { id: decoded._id, role };
+      next();
+    } catch {
+      next(new Error('Unauthorized'));
     }
   });
-
-  console.log('[Socket] ✅ Socket.IO initialized');
-
-  io.on('connection', (socket) => {
-    console.log(`[Socket] 🚀 New connection: ${socket.id}`);
-
-    // Save socket ID in user or captain DB record
-    socket.on('json', async (data) => {
-      const { userId, userType } = data;
-      console.log(`[Socket] 📥 Received 'json' => userType: ${userType}, userId: ${userId}, socketId: ${socket.id}`);
-
+  io.on('connection', async (socket) => {
+    const { id, role } = socket.data.identity;
+    const model = role === 'captain' ? captainModel : userModel;
+    const field = role === 'captain' ? 'socketId' : 'socketID';
+    socket.on('update-location-captain', async (data = {}, acknowledge = () => {}) => {
+      const { location } = data;
+      if (role !== 'captain' || !Number.isFinite(location?.lat) || !Number.isFinite(location?.lng) ||
+          Math.abs(location.lat) > 90 || Math.abs(location.lng) > 180) {
+        return acknowledge({ error: 'Invalid location or role' });
+      }
       try {
-        if (userType === 'user') {
-          const updatedUser = await userModel.findByIdAndUpdate(
-            userId,
-            { socketID: socket.id },
-            { new: true }
-          );
-          console.log(`[Socket] 👤 Updated user: ${JSON.stringify(updatedUser)}`);
-        } else if (userType === 'captain') {
-          const updatedCaptain = await captainModel.findByIdAndUpdate(
-            userId,
-            { socketId: socket.id },
-            { new: true }
-          );
-          console.log(`[Socket] 🚖 Updated captain: ${JSON.stringify(updatedCaptain)}`);
-        } else {
-          console.warn(`[Socket] ❗ Unknown userType received: ${userType}`);
-        }
-      } catch (err) {
-        console.error(`[Socket] ❌ Error updating socket ID:`, err);
+        await captainModel.updateOne({ _id: id }, {
+          $set: { location: { type: 'Point', coordinates: [location.lng, location.lat] } }
+        });
+        acknowledge({ ok: true });
+      } catch {
+        acknowledge({ error: 'Unable to update location' });
       }
     });
-
-    connectedSockets.set(socket.id, socket);
-    console.log(`[Socket] 🗂️ Added to connectedSockets map: ${socket.id}`);
-
-    
-
-    // ✅ Socket ID update (optional if already handled in 'json' event)
-    socket.on("update-captain-socket-id", async ({ captainId, socketId }) => {
-  try {
-    await captainModel.findByIdAndUpdate(captainId, { socketId });
-    console.log(`✅ Captain ${captainId} updated with socketId ${socketId}`);
-  } catch (err) {
-    console.error("❌ Error updating socketId:", err);
-  }
-});
-    // ✅ On disconnect
     socket.on('disconnect', async () => {
-      console.log(`[Socket] 🔌 Disconnected: ${socket.id}`);
-      connectedSockets.delete(socket.id);
-
       try {
-        const userResult = await userModel.findOneAndUpdate(
-          { socketID: socket.id },
-          { socketID: null }
-        );
-
-        const captainResult = await captainModel.findOneAndUpdate(
-          { socketId: socket.id },
-          { socketId: null }
-        );
-
-        console.log(`[Socket] 🔧 Disconnect cleanup: user=${!!userResult}, captain=${!!captainResult}`);
-      } catch (err) {
-        console.error(`[Socket] ❌ Error during disconnect cleanup:`, err);
+        await model.updateOne({ _id: id, [field]: socket.id }, { $set: { [field]: null } });
+      } catch {
+        console.error('Socket cleanup failed');
       }
     });
-
-
-    // ✅ Location update for captain
-   socket.on('update-location-captain', async (data) => {
-  const { userId, location } = data;
-
-  if (
-    !location ||
-    typeof location.lat !== 'number' ||
-    typeof location.lng !== 'number'
-  ) {
-    return socket.emit('error abhi', { message: 'Invalid location' });
-  }
-
-  try {
-    const updated = await captainModel.findByIdAndUpdate(
-      userId,
-      {
-        location: {
-          type: 'Point',
-          coordinates: [location.lng, location.lat],
-        },
-      },
-      { new: true }
-    );
-
-    if (!updated) {
-      console.warn(`[Socket] ⚠️ Captain not found for location update: ${userId}`);
-    } else {
-      console.log(`[Socket] 📍 Location updated for captain ${userId}:`, updated.location);
+    try {
+      await model.updateOne({ _id: id }, { $set: { [field]: socket.id } });
+      if (socket.connected) socket.emit('ready');
+      else await model.updateOne({ _id: id, [field]: socket.id }, { $set: { [field]: null } });
+    } catch {
+      socket.disconnect(true);
     }
-  } catch (err) {
-    console.error(`[Socket] ❌ Error updating location:`, err);
-  }
-});
-
-
-
-    // ✅ Chat message between sockets
-    socket.on('chat-message', ({ toSocketId, message }) => {
-      console.log(`[Socket] 💬 Chat from ${socket.id} to ${toSocketId}:`, message);
-      sendMessage(toSocketId, {
-        event: 'chat-message',
-        data: { from: socket.id, message }
-      });
-    });
   });
+  return io;
 }
 
-// Helper to send message to a specific socket
-function sendMessage(toSocketId, { event, data }) {
-  if (!io) {
-    console.error('[Socket] ❌ Socket.IO not initialized');
-    return;
-  }
-
-  const socket = connectedSockets.get(toSocketId);
-
-  if (socket) {
-    console.log(`[Socket] 📤 Emitting event '${event}' to socket ID: ${toSocketId}`);
-    socket.emit(event, data);
-  } else {
-    console.warn(`[Socket] ⚠️ Could not find socket with ID: ${toSocketId}`);
-  }
+function sendMessage(socketId, { event, data }) {
+  if (io && socketId) io.to(socketId).emit(event, data);
 }
 
-module.exports = {
-  initializeSocket,
-   sendMessage
-};
+module.exports = { initializeSocket, sendMessage };

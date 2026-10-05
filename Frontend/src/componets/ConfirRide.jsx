@@ -1,51 +1,27 @@
-import React from 'react'
+import { useState } from 'react';
 
-const ConfirRide = (props) => {
-  return (
-    <div>
-      <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
-        props.setConfirmRidePanel(false)
-       }}><i className=" text-3xl text-gray-200 ri-arrow-down-s-line"></i></h5>
-       <h3 className='text-xl font-semibold mb-5 '> Confrim your Ride  </h3>
-      
-      <div className='flex gap-2 justify-between flex-col items-center'>
-          <img className='h-20' src='https://tse1.mm.bing.net/th/id/OIP.90_IXyFPb47LZ_AYAe1ylAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'alt='car'/>
-          <div className=" w-full mt-5 ">
-            <div className=" flex items-center gap-5 p-2 border-b-2">
-               <i className=" text-3xl ri-map-pin-user-line"></i>
-                <div>
-                <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>{props.pickup} </p>
-                </div>
-            </div>
-            <div className="flex items-center gap-5 p-2 border-b-2">
-                <i className=" text-2xl ri-map-pin-fill"></i>
-                <div>
-                <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>{props.destination}</p>
-                </div>
-            </div>
-            <div className="flex items-center gap-5 p-2 ">
-                <i className=" text-2xl ri-currency-line"></i>
-                <div>
-                <h3 className='text-lg font-medium'>{props.fare[props.vehicleType]}</h3 >
-                <p className='text-sm text-gray-600 '>Cash Cash</p>
-                </div>
-            </div>
-          </div>
-          <button onClick={()=>{
-            props.setConfirmRidePanel(false)
-            props.setVehicleFound(true)
-            props.createRide()
-
-          }} className='w-full mt-5 bg-green-600 text-white font-semibold p-2 rounded-xl'>Confirm</button>
-      </div>
-
-
-
-
-    </div>
-  )
+export default function ConfirRide(props) {
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function confirm() {
+    setError('');
+    setBusy(true);
+    try {
+      await props.createRide();
+      props.setConfirmRidePanel(false);
+      props.setVehicleFound(true);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Unable to book your ride. Try again.');
+    } finally { setBusy(false); }
+  }
+  return <section>
+    <h2 className="text-2xl font-semibold">Confirm your ride</h2>
+    <p className="mt-4">Pickup: {props.pickup}</p>
+    <p className="mt-3">Destination: {props.destination}</p>
+    <p className="mt-3 text-xl">Fare: {props.fare[props.vehicleType]}</p>
+    <p>Payment: cash</p>
+    {error && <p role="alert" className="mt-3 text-red-700">{error}</p>}
+    <button disabled={busy} onClick={confirm} className="mt-5 w-full rounded-lg bg-green-700 p-3 text-white">{busy ? 'Booking...' : 'Confirm'}</button>
+    <button disabled={busy} onClick={() => props.setConfirmRidePanel(false)} className="mt-3 w-full rounded-lg bg-gray-200 p-3">Back</button>
+  </section>;
 }
-
-export default ConfirRide

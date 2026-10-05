@@ -10,7 +10,7 @@
 
     captain:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'captain'
+        ref: 'Captain'
     },
 
     pickup:{

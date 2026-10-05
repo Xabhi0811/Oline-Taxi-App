@@ -1,57 +1,28 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import { UserDataContext, SocketContext } from './contexts';
-
-const SOCKET_SERVER_URL = `${import.meta.env.VITE_SOCKET_URL}`;
+import { SocketContext } from './contexts';
 
 export const SocketProvider = ({ children }) => {
-  const socketRef = useRef();
-  const [socket, setSocket] = useState(null); // ✅ Add this
-  const { user } = useContext(UserDataContext);
+  const { pathname } = useLocation();
+  const role = pathname.startsWith('/captain-') ? 'captain' : 'user';
+  const active = ['/home', '/riding', '/captain-home', '/captain-riding'].includes(pathname);
+  const token = active ? localStorage.getItem(role === 'captain' ? 'captainToken' : 'token') : null;
+  const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(SOCKET_SERVER_URL, {
-      transports: ['websocket'],
-      reconnection: true,
-    });
-
-    socketRef.current = newSocket;
-    setSocket(newSocket); // ✅ Important: triggers rerender with new socket
-
-    newSocket.on('connect', () => {
-      console.log('✅ Socket connected:', newSocket.id);
-      if (user?._id && user?.role) {
-        newSocket.emit('registerSocket', {
-          userId: user._id,
-          role: user.role,
-        });
-      }
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('⚠️ Socket disconnected');
-    });
-
-    newSocket.on('connect_error', (err) => {
-      console.error('❌ Socket connection error:', err);
-    });
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [user]);
-
-  const sendMessage = (event, data) => {
-    if (socket) {
-      socket.emit(event, data);
-    } else {
-      console.warn("⚠️ Socket not connected.");
+    if (!token) {
+      setSocket(null);
+      return;
     }
-  };
+    const connection = io(import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000', {
+      auth: { token, role },
+      transports: ['websocket'],
+    });
+    setSocket(connection);
+    return () => connection.disconnect();
+  }, [token, role]);
 
-  return (
-    <SocketContext.Provider value={{ socket, sendMessage }}>
-      {children}
-    </SocketContext.Provider>
-  );
+  const sendMessage = useCallback((event, data) => socket?.emit(event, data), [socket]);
+  return <SocketContext.Provider value={{ socket, sendMessage }}>{children}</SocketContext.Provider>;
 };
