@@ -1,55 +1,14 @@
-import React from 'react'
-
-const WaitingForDriver = (props) => {
-  return (
-       <div>
-      <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
-        props.setWaitingForDriver(false)
-       }}><i className=" text-3xl text-gray-200 ri-arrow-down-s-line"></i></h5>
-         
-         <div className=" flex items-center justify-between ">
-          <img className='h-12' src='https://tse1.mm.bing.net/th/id/OIP.90_IXyFPb47LZ_AYAe1ylAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3'alt='car'/>
-          <div className="text-right">
-            <h2 className='text-2lg font-medium  capitalize'> {props.ride?.captain?.fullname?.firstname} {props.ride?.captain?.fullname?.lastname}</h2>
-            <h2 className='text-xl font-semibold -mt-1 -mb-1'>{props.ride?.captain?.vehicle?.plate}</h2>
-            <h2 className='text-sm text-gray-600'>Swift</h2>
-            <h1 className='text-lg font-semibold'>OTP: {props.ride?.Otp}</h1>
-          </div>
-         </div>
-      
-      <div className='flex gap-2 justify-between flex-col items-center'>
-  
-          <div className=" w-full mt-5 ">
-            <div className=" flex items-center gap-5 p-2 border-b-2">
-               <i className=" text-3xl ri-map-pin-user-line"></i>
-                <div>
-                <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>{props.ride?.pickup}</p>
-                </div>
-            </div>
-            <div className="flex items-center gap-5 p-2 border-b-2">
-                <i className=" text-2xl ri-map-pin-fill"></i>
-                <div>
-                <h3 className='text-lg font-medium'>562/11-A</h3>
-                <p className='text-sm text-gray-600 '>{props.ride?.destination}</p>
-                </div>
-            </div>
-            <div className="flex items-center gap-5 p-2 ">
-                <i className=" text-2xl ri-currency-line"></i>
-                <div>
-                <h3 className='text-lg font-medium'>{props.ride?.fare}</h3>
-                <p className='text-sm text-gray-600 '>Cash Cash</p>
-                </div>
-            </div>
-          </div>
-         
-      </div>
-
-
-
-
+import TripDetails from './TripDetails';
+export default function WaitingForDriver({ ride, setWaitingForDriver }) {
+  return <div>
+    <button className="sheet-close" aria-label="Close captain details" onClick={() => setWaitingForDriver(false)}>×</button>
+    <p className="eyebrow">YOUR CAPTAIN IS ON THE WAY</p>
+    <h2 className="text-2xl font-semibold capitalize">{ride?.captain?.fullname?.firstname} {ride?.captain?.fullname?.lastname}</h2>
+    <p className="panel-subtitle">{ride?.captain?.vehicle?.plate} · {ride?.captain?.vehicle?.color}</p>
+    <div className="my-5 rounded-xl bg-green-50 p-4">
+      <h1 className="text-xl font-semibold tracking-wider">OTP: {ride?.Otp}</h1>
+      <p className="text-sm text-gray-600 mt-1">Share this code with your captain at pickup.</p>
     </div>
-  )
+    <TripDetails pickup={ride?.pickup} destination={ride?.destination} fare={'₹' + (ride?.fare ?? '')}/>
+  </div>;
 }
-
-export default WaitingForDriver

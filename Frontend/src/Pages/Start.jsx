@@ -1,18 +1,17 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-
-const Start = () => {
-  return (
-    <div>
-      <div className='bg-cover bg-center bg-[url(https://images.unsplash.com/photo-1542789392-618ecac2c626?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)] h-screen pt-8 flex justify-between flex-col w-full '>
-        <img className='w-16 ml-8' src="https://logospng.org/download/uber/logo-uber-4096.png" alt="" />
-        <div className='bg-white py-4 pb-7 px-4'>
-          <h2 className='text-3xl font-bold'>GET STARTED WITH UBER</h2>
-          <Link to='/Login' className=' flex items-center justify-center w-full bg-black text-white py-3 rounded mt-5'>CONTINUE</Link>
-        </div>
-      </div>
+import { Link } from 'react-router-dom';
+import 'remixicon/fonts/remixicon.css';
+export default function Start() {
+  return <main className="start-page">
+    <header className="start-header"><Link to="/" className="brand">Uber</Link></header>
+    <div className="start-content">
+      <section>
+        <span className="eyebrow">A LITTLE CLOSER TO WHERE YOU WANT TO BE</span>
+        <h1>Your day.<br/>Your destination.</h1>
+        <p>Head across town or find your next opportunity behind the wheel. Your journey starts here.</p>
+        <Link to="/login" className="primary-button">Continue <span aria-hidden="true" className="ml-4">→</span></Link>
+        <Link to="/captain-login" className="flex w-fit min-h-11 items-center mt-3 underline underline-offset-4">Drive with us</Link>
+      </section>
+      <div className="start-art" aria-hidden="true"><i className="ri-taxi-line"/></div>
     </div>
-  )
+  </main>;
 }
-
-export default Start

@@ -188,3 +188,40 @@ Installed dependencies: 4,035 previously tracked files removed from the Git inde
 - WORK.md
 - package-lock.json
 - package.json
+
+## Responsive layout improvements - 2026-10-07
+
+- Scrollable mobile authentication forms and centered desktop cards; name/vehicle fields stack below 380px. Accessible input names and 44-48px action targets.
+- Mobile bottom sheets and bounded, scrollable 420px desktop panels replace fixed percentage heights and GSAP positioning. Only the active ride panel is mounted.
+- Responsive landing page, consistent navigation, safe-area padding, dynamic viewport heights, visible keyboard focus and reduced-motion support.
+- Keyboard-accessible vehicle/location buttons; shared TripDetails wraps addresses; captain summary shows actual name/vehicle fields rather than placeholder earnings.
+- Bounded active-ride cards and scrollable completion overlay. Failed decorative map images use the CSS fallback.
+- Existing API/auth/socket behavior retained. No real account/ride was created for verification.
+
+Checks executed:
+- npm --prefix Frontend run lint: passed.
+- npm --prefix Frontend run build: passed; 154 modules, final build 2.32 seconds.
+- Chrome public screens (landing and both login/signup flows): no horizontal overflow at 320x568, 375x812, 768x1024, 1440x900 and 812x375.
+- Mocked-profile rider/captain home checks passed at the same sizes; desktop panels fit viewport height. Final booking checks also clicked Find Trip and observed its validation message at every size.
+- In Backend: set MONGOMS_SYSTEM_BINARY to the resolved node_modules/.cache/mongodb-memory-server/mongod-x64-win32-7.0.24.exe; set BROWSER_WIDTH=320 and BROWSER_HEIGHT=568; run npm run test:browser. All seven journey stages passed, including after the final bottom-sheet adjustment.
+- Repeat with BROWSER_WIDTH=1440 and BROWSER_HEIGHT=900: all seven journey stages passed. The script now accepts dimensions and checks overflow at each stage.
+- The initial browser run was stopped while downloading MongoDB; reruns used the existing executable with fresh disposable databases, not the configured database.
+- Visually reviewed ignored screenshots under .audit-tools/responsive-*.png.
+- Physical devices, touch keyboards, Safari and real Maps were not tested. Chrome used mocked Maps/geolocation.
+
+Changed files: Backend/scripts/browser-journey.cjs; Frontend/src/index.css; Pages/Start, UserLogin, UserSignup, CaptainLogin, CaptainSignup, Home, CaptainHome, Riding, CaptainRiding; componets/CaptainDetails, LocationSearchPanel, VehiclePanel, RidePopUp, LookingForDriver, WaitingForDriver and new TripDetails; WORK.md.
+
+A repository-wide git diff --check unexpectedly echoed a Maps credential from a concurrently modified Backend/.env. The file was not edited by this task. The user was informed to rotate the exposed key; subsequent checks exclude configuration files. No credential value is recorded here.
+
+## Location suggestions and fare repair - 2026-10-07
+
+- Replaced legacy Places autocomplete and Distance Matrix calls with Places API (New) and Routes Compute Routes. Kept the existing frontend suggestion/fare response contracts and Geocoding for captain proximity.
+- Added sanitized Maps error codes for billing, key restrictions, configuration, quota and timeouts; no raw provider messages, request configuration, credentials or personal locations are logged or returned.
+- Location search now debounces requests, cancels obsolete requests, and shows loading, empty and error states. Restored clickable suggestions and replaced the broken close glyph. Added Google attribution.
+- Added a safe public-landmark diagnostic and documented required APIs, billing and key restrictions in README.
+- Commands executed: Backend npm test with MONGOMS_SYSTEM_BINARY pointing to the existing node_modules/.cache/mongodb-memory-server/mongod-x64-win32-7.0.24.exe: 19 passed, zero failed. Frontend npm run lint: passed. Frontend npm run build: passed, 154 modules, 2.29 seconds.
+- Backend npm run test:browser with the same binary: all eight reported stages passed in Chrome using a disposable database and mocked Maps, including suggestion selection, configuration/empty search states, signup/login, fare error, booking, notification, acceptance, OTP, reconnect, completion and unauthorized redirect. No uncaught browser errors.
+- Backend npm run check:maps: exit 1. Latest actual Google results: Autocomplete MAPS_KEY_RESTRICTION; Routes MAPS_CONFIGURATION; Geocoding MAPS_BILLING_REQUIRED. These are external setup blockers despite the reported Cloud changes. Live suggestions/fare/booking are NOT claimed to pass. The API project owning the saved key still needs working billing and access/key permissions for all three services.
+- Restarted the existing project backend to apply code and reload environment settings. Preserved the user's Backend/.env edit without reading or changing its values.
+- Changed files for this repair: Backend/services/map.service.js, Backend/services/maps-error.js, Backend/controllers/map.controller.js, Backend/controllers/ride.controller.js, Backend/scripts/check-maps.cjs, Backend/scripts/browser-journey.cjs, Backend/test/maps.test.js, Backend/test/journey.test.js, Backend/package.json, Frontend/src/Pages/Home.jsx, README.md, WORK.md. No dependencies changed in this repair; previous security/audit results above remain separate.
+- Startup checks after restart: GET http://127.0.0.1:4000/health and GET http://127.0.0.1:5173 both returned HTTP 200.

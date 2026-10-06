@@ -17,9 +17,9 @@ const Riding = () => {
     socket.on('ride-ended', ended);
     return () => socket.off('ride-ended', ended);
   }, [socket, ride?._id, setRide]);
-  return <main className="min-h-screen bg-gray-100 p-6">
+  return <main className="ride-page">
     <Link to="/home" className="underline">Home</Link>
-    <section className="mx-auto mt-12 max-w-lg rounded-xl bg-white p-6">
+    <section className="ride-summary">
       <h1 className="text-2xl font-semibold">{ride?.status === 'completed' ? 'Ride completed' : 'Your ride'}</h1>
       {error && <p role="alert">{error}</p>}
       {!ride && !error && <p role="status">Loading ride...</p>}

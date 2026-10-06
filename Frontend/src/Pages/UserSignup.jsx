@@ -58,22 +58,22 @@ const UserSignup = () => {
   }
   return (
     <div>
-      <div className='p-7 h-screen flex flex-col justify-between'>
+      <div className='auth-card'>
         <div>
-          <img className='w-16 mb-10' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYQy-OIkA6In0fTvVwZADPmFFibjmszu2A0g&s" alt="" />
+          <Link to="/" className="brand auth-brand">Uber<span>Move your way.</span></Link>
 
           <form onSubmit={(e) => {
             submitHandler(e)
           }}>
 
             {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
-            <h3 className='text-lg w-1/2  font-medium mb-2'>What's your name</h3>
-            <div className='flex gap-4 mb-7'>
+            <h3 className='text-lg font-medium mb-2'>What's your name</h3>
+            <div className='form-row mb-7'>
               <input
                 required
                 className='bg-[#eeeeee] w-1/2 rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
                 type="text"
-                placeholder='First name'
+                aria-label='First name' placeholder='First name'
                 value={firstName}
                 onChange={(e) => {
                   setFirstName(e.target.value)
@@ -83,7 +83,7 @@ const UserSignup = () => {
                 required
                 className='bg-[#eeeeee] w-1/2  rounded-lg px-4 py-2 border  text-lg placeholder:text-base'
                 type="text"
-                placeholder='Last name'
+                aria-label='Last name' placeholder='Last name'
                 value={lastName}
                 onChange={(e) => {
                   setLastName(e.target.value)
@@ -100,7 +100,7 @@ const UserSignup = () => {
               }}
               className='bg-[#eeeeee] mb-7 rounded-lg px-4 py-2 border w-full text-lg placeholder:text-base'
               type="email"
-              placeholder='email@example.com'
+              aria-label='Email' placeholder='email@example.com'
             />
 
             <h3 className='text-lg font-medium mb-2'>Enter Password</h3>
@@ -112,7 +112,7 @@ const UserSignup = () => {
                 setPassword(e.target.value)
               }}
               required type="password"
-              placeholder='password'
+              aria-label='Password' placeholder='password'
             />
 
             <button disabled={busy}

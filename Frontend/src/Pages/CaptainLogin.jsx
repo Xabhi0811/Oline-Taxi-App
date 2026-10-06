@@ -38,35 +38,31 @@ const CaptainLogin = () => {
   };
 
   return (
-    <div className='p-7 h-screen flex flex-col justify-between'> 
-      <div> 
-        <img 
-          className='w-20 mb-3' 
-          src="https://static.vecteezy.com/system/resources/previews/027/127/451/non_2x/uber-logo-uber-icon-transparent-free-png.png" 
-          alt="Uber Logo" 
-        />
+    <div className='auth-card'>
+      <div>
+        <Link to="/" className="brand auth-brand">Uber<span>Move your way.</span></Link>
         <form onSubmit={submitHandler}>
           {error && <p role="alert" className="mb-3 text-red-700">{error}</p>}
           <h3 className='text-lg font-medium mb-2'>What is your email</h3>
-          <input 
-            required 
-            value={email} 
+          <input
+            required
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base' 
-            type="email" 
-            placeholder='email@example.com'
+            className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base'
+            type="email"
+            aria-label='Email' placeholder='email@example.com'
           />
 
           <h3 className='text-lg font-medium mb-2'>Enter password</h3>
-          <input 
-            required 
-            value={password} 
+          <input
+            required
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base' 
-            type="password" 
-            placeholder='password'
+            className='bg-[#eeeeee] mb-7 rounded px-4 py-2 border w-full text-lg placeholder:text-base'
+            type="password"
+            aria-label='Password' placeholder='password'
           />
-          
+
           <button disabled={busy}
             className='bg-[#111] text-white font-semibold mb-3 rounded px-4 py-2 w-full text-lg'>
             Login
@@ -77,10 +73,10 @@ const CaptainLogin = () => {
           </p>
         </form>
       </div>
-      
+
       <div>
-        <Link 
-          to='/login' 
+        <Link
+          to='/login'
           className='flex items-center justify-center bg-[#d5622d] text-white font-semibold mb-5 rounded px-4 py-2 w-full text-lg'>
           Sign in as user
         </Link>

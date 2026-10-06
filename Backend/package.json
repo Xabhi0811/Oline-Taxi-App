@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "node --test",
-    "test:browser": "node scripts/browser-journey.cjs"
+    "test:browser": "node scripts/browser-journey.cjs",
+    "check:maps": "node scripts/check-maps.cjs"
   },
   "keywords": [],
   "author": "",

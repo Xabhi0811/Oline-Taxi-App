@@ -21,7 +21,9 @@ Configure these variables privately:
 | Backend/.env | DB_CONNECT, JWT_SECRET, GOOGLE_MAPS_API, optional PORT (default 4000), optional FRONTEND_URL |
 | Frontend/.env | VITE_BACKEND_URL, VITE_SOCKET_URL (normally http://localhost:4000) |
 
-Use a strong random JWT secret. Enable the Google Geocoding, Distance Matrix and Places Autocomplete APIs used by this project. Never commit credentials. Backend HTTP CORS permits localhost/127.0.0.1:5173, FRONTEND_URL, and the existing development tunnel configured in app.js; Socket.IO permits the two local origins and FRONTEND_URL.
+Use a strong random JWT secret. Enable billing and the Google Geocoding API, Places API (New), and Routes API in the project owning the backend Maps key. The key's API restrictions must also allow all three services. Never commit credentials. Backend HTTP CORS permits localhost/127.0.0.1:5173, FRONTEND_URL, and the existing development tunnel configured in app.js; Socket.IO permits the two local origins and FRONTEND_URL.
+
+Run `npm --prefix Backend run check:maps` to check all three services using public landmarks. It prints only success/error codes, never the key or raw Google responses. Search uses Places Autocomplete (New), and fares use Routes Compute Routes. Suggestions display loading, empty-result and configuration-error states. Billing or key restrictions must be corrected in Google Cloud; restarting the backend is required after changing its `.env` key.
 
 ~~~powershell
 cd Backend

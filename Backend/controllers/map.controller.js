@@ -1,5 +1,6 @@
 const maps = require('../services/map.service');
 const { validationResult } = require('express-validator');
+const { errorResponse } = require('../services/maps-error');
 function handle(operation) {
   return async (req, res) => {
     if (!validationResult(req).isEmpty()) return res.status(400).json({ message: 'Invalid location input' });
@@ -7,8 +8,9 @@ function handle(operation) {
       const data = await operation(req.query);
       if (data === null) return res.status(422).json({ message: 'Location or route not found' });
       res.json(data);
-    } catch {
-      res.status(502).json({ message: 'Maps service unavailable. Please try again.' });
+    } catch (error) {
+      const result = errorResponse(error, 'Maps service unavailable. Please try again.');
+      res.status(result.status).json(result.body);
     }
   };
 }

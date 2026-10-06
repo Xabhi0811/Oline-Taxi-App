@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const mapService = require('../services/map.service');
 const { sendMessage } = require('../socket');
 const { captainRide, riderRide, rideOffer } = require('../services/ride.dto');
+const { errorResponse } = require('../services/maps-error');
 
 function invalid(req, res) {
   const errors = validationResult(req);
@@ -27,7 +28,8 @@ module.exports.createRide = async (req, res) => {
     });
     return res.status(201).json(riderRide(ride));
   } catch (error) {
-    return res.status(error.status || 502).json({ message: 'Unable to create ride. Check the locations and try again.' });
+    const result = errorResponse(error, 'Unable to create ride. Check the locations and try again.');
+    return res.status(result.status).json(result.body);
   }
 };
 
@@ -36,8 +38,9 @@ module.exports.getFare = async (req, res) => {
   try {
     const fare = await rideService.getFare(req.query.pickup, req.query.destination);
     res.json({ fare });
-  } catch {
-    res.status(502).json({ message: 'Unable to calculate fare. Check the locations and try again.' });
+  } catch (error) {
+    const result = errorResponse(error, 'Unable to calculate fare. Check the locations and try again.');
+    res.status(result.status).json(result.body);
   }
 };
 

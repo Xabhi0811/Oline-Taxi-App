@@ -32,22 +32,25 @@ test('disposable MongoDB HTTP and Socket.IO rider/captain journey', { timeout: 1
   process.env.DB_CONNECT = mongo.getUri('ride_security_test');
   await mongoose.connect(process.env.DB_CONNECT);
   const originalGet = axios.get;
+  const originalPost = axios.post;
   let mapsMode = 'ok';
   let mapCalls = 0;
-  axios.get = async (url, config) => {
+  const mockMaps = async (url, config) => {
     mapCalls++;
     assert.equal(config.timeout, 5000);
     assert.equal(config.maxRedirects, 0);
     assert.equal(config.maxContentLength, 1048576);
     assert.ok(config.signal instanceof AbortSignal);
     if (mapsMode === 'timeout') throw new Error('private upstream config must not escape');
-    if (mapsMode === 'bad') return { data: { status: 'OK', results: [], rows: [], predictions: [{}] } };
-    if (mapsMode === 'zero') return { data: { status: 'ZERO_RESULTS' } };
+    if (mapsMode === 'bad') return { data: { status: 'OK', results: [], malformed: true } };
+    if (mapsMode === 'zero') return { data: url.includes('geocode') ? { status: 'ZERO_RESULTS' } : {} };
     if (url.includes('geocode')) return { data: { status: 'OK', results: [{ geometry: { location: { lat: 12, lng: 77 } } }] } };
-    if (url.includes('distancematrix')) return { data: { status: 'OK', rows: [{ elements: [{ status: 'OK', distance: { value: 2000 }, duration: { value: 600 } }] }] } };
-    return { data: { status: 'OK', predictions: [{ description: 'Test pickup', place_id: 'test-place' }] } };
+    if (url.includes('computeRoutes')) return { data: { routes: [{ distanceMeters: 2000, duration: '600s' }] } };
+    return { data: { suggestions: [{ placePrediction: { text: { text: 'Test pickup' }, placeId: 'test-place' } }] } };
   };
-  t.after(() => { axios.get = originalGet; });
+  axios.get = mockMaps;
+  axios.post = (url, body, config) => mockMaps(url, config);
+  t.after(() => { axios.get = originalGet; axios.post = originalPost; });
   const app = require('../app');
   const { initializeSocket } = require('../socket');
   const Ride = require('../models/ride.module');
