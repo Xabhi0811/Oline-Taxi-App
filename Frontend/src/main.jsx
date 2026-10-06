@@ -6,6 +6,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { UserProvider } from "./context/UserContext.jsx";
 import CaptainContext from "./context/CaptainContext.jsx";
 import { SocketProvider } from './context/SocketContext.jsx';
+import axios from 'axios';
+
+axios.defaults.timeout = 10000;
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

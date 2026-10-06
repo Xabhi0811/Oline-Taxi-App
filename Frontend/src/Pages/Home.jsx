@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useLayoutEffect } from 'react';
 import gsap from 'gsap'
 import 'remixicon/fonts/remixicon.css'
-import LocationSearchPanel from '../componets/LocationSearchPanel'; 
+import LocationSearchPanel from '../componets/LocationSearchPanel';
 import VehiclePanel from '../componets/VehiclePanel';
 import ConfirRide from '../componets/ConfirRide';
 import LookingForDriver from '../componets/LookingForDriver';
@@ -66,14 +66,35 @@ useEffect(() => {
 
   socket.on('ride-confirmed', handleRideConfirm);
   socket.on('ride-started', handleRideStarted);
+  let active = true;
+  const recover = async () => {
+    const id = sessionStorage.getItem('userRideId');
+    if (!id) return;
+    try {
+      const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/rides/user/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!active) return;
+      if (data.status === 'accepted') handleRideConfirm(data);
+      else if (data.status === 'ongoing') handleRideStarted(data);
+      else if (data.status === 'pending') { setRide(data); setVehicleFound(true); }
+      else { sessionStorage.removeItem('userRideId'); setWaitingForDriver(false); setVehicleFound(false); }
+    } catch {
+      if (active) setTripError('Unable to restore your ride. Please reconnect and try again.');
+    }
+  };
+  socket.on('ready', recover);
+  recover();
 
   return () => {
+    active = false;
+    socket.off('ready', recover);
     socket.off('ride-confirmed', handleRideConfirm);
     socket.off('ride-started', handleRideStarted);
   };
 }, [socket, navigate]);
 
- 
+
 
   // Fetch location suggestions from backend
   const fetchSuggestions = async (query) => {
@@ -93,17 +114,16 @@ useEffect(() => {
         },
       }
     );
-    console.log("Suggestions response:", res.data);
 
     setLocationSuggestions(res.data.suggestions || []); // ✅ show results
-  } catch (err) {
-    console.error('Error fetching suggestions:', err.response?.data || err.message); // ✅ log the error
+  } catch {
     setLocationSuggestions([]);
   }
 };
 
   // Fetch suggestions when pickup or destination changes and panel is open
   React.useEffect(() => {
+    const timer = setTimeout(() => {
     if (panelOpen && activeField === 'pickup' && pickup) {
       fetchSuggestions(pickup);
     } else if (panelOpen && activeField === 'destination' && destination) {
@@ -111,6 +131,8 @@ useEffect(() => {
     } else {
       setLocationSuggestions([]);
     }
+    }, 300);
+    return () => clearTimeout(timer);
   }, [pickup, destination, panelOpen, activeField]);
 
   const handleInputClick = (field) => {
@@ -174,7 +196,7 @@ useLayoutEffect(() => {
       }
  }, [vehiclePanel])
 
- 
+
  useLayoutEffect(function(){
       if(confirmRidePanel){
         gsap.to(confirmRidePanelRef.current,{
@@ -188,7 +210,7 @@ useLayoutEffect(() => {
  }, [confirmRidePanel])
 
 
- 
+
  useLayoutEffect(function(){
       if(vehicleFound){
         gsap.to(vehicleFoundRef.current,{
@@ -252,14 +274,14 @@ async function findTrip() {
     setFindingTrip(false);
   }
 }
- 
-async function createRide() { 
+
+async function createRide() {
   const response = await axios.post(
     `${import.meta.env.VITE_BACKEND_URL}/rides/create`,
     {
       pickup,
       destination,
-      vehicleType  
+      vehicleType
     },
     {
       headers: {
@@ -287,7 +309,7 @@ async function createRide() {
              <img src='https://tse4.mm.bing.net/th/id/OIP.CLHyxk-5yNE9voIZWJ4h6gHaDH?rs=1&pid=ImgDetMain&o=7&rm=3'alt='uber map' className='h-full w-full object-cover'/>
              </div>
       </div>
-      <div className=" flex flex-col justify-end h-screen absolute w-full top-0 "> 
+      <div className=" flex flex-col justify-end h-screen absolute w-full top-0 ">
         <div className="h-[30%] p-6 bg-white relative">
            <h5 ref={panelCloseRef} onClick={()=>{
             setPanelOpen(false)
@@ -300,15 +322,12 @@ async function createRide() {
           SubmitHandler(e)
         }}>
           <div className="line absolute h-16 w-1 top-[45%] left-10 bg-gray-900 rounded-full"></div>
-         
+
           <input
             onClick={() => handleInputClick('pickup')}
             value={pickup}
             onChange={(e) => {
               setPickup(e.target.value);
-              if (panelOpen && activeField === 'pickup') {
-                fetchSuggestions(e.target.value);
-              }
             }}
             type="text" placeholder='Add pick-up location '
             className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-5'
@@ -320,69 +339,66 @@ async function createRide() {
             value={destination}
             onChange={(e) => {
               setDestination(e.target.value);
-              if (panelOpen && activeField === 'destination') {
-                fetchSuggestions(e.target.value);
-              }
             }}
             required
             type="text" placeholder='Enter your destination'
             className='bg-[#eee] px-12 py-2 text-lg rounded-lg w-full mt-3'
             autoComplete="off"
           />
- 
+
 
         </form>
         <button disabled={findingTrip} onClick={findTrip} className='bg-black text-white px-4 rounded-lg mt-3 h-10 w-full'>{findingTrip ? 'Finding trip...' : 'Find Trip'}</button>
         {tripError && <p role="alert" className="mt-2 text-sm text-red-700">{tripError}</p>}
-        
+
         </div>
         <div  ref={panelRef} className="h-0 bg-white">
-        <LocationSearchPanel 
-          locations={locationSuggestions} 
+        <LocationSearchPanel
+          locations={locationSuggestions}
           onSelectLocation={handleSelectLocation}
         />
         </div>
       </div>
-     
-    <div ref={vehiclePanelRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-5 py-10 pt-12"> 
+
+    <div ref={vehiclePanelRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-5 py-10 pt-12">
         <VehiclePanel selectVehicle={setVehicleType} fare={fare}  setConfirmRidePanel={setConfirmRidePanel} setVehiclePanel={setVehiclePanel}/>
-      
+
     </div>
 
-     <div ref={confirmRidePanelRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"> 
-        <ConfirRide  
+     <div ref={confirmRidePanelRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12">
+        <ConfirRide
         pickup={pickup}
         destination={destination}
         fare={fare}
         vehicleType={vehicleType}
-        
+
         createRide={createRide} setConfirmRidePanel={setConfirmRidePanel}  setVehicleFound={setVehicleFound}/>
-      
+
     </div>
 
 
-     <div ref={vehicleFoundRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"> 
+     <div ref={vehicleFoundRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12">
        <LookingForDriver
         pickup={pickup}
         destination={destination}
         fare={fare}
         vehicleType={vehicleType}
-       
-       
-       setVehicleFound={setVehicleFound} />
-      
-    </div>
-      
 
-      <div ref={waitingForDriverRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12"> 
-       <WaitingForDriver 
+
+       setVehicleFound={setVehicleFound} />
+
+    </div>
+
+
+      <div ref={waitingForDriverRef} className=" fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12">
+       <WaitingForDriver
         ride={ride}
         setVehicleFound={setVehicleFound}
         setWaitingForDriver={setWaitingForDriver}
-     
-       
+
+
        waitingForDriver={waitingForDriver} />
-      
+
     </div>
 
 

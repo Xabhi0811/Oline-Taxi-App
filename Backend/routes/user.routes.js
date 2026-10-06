@@ -1,3 +1,4 @@
+const { loginLimit } = require('../middlewares/rate-limit');
 const express = require('express')
 const router = express.Router();
 const {body} = require("express-validator")
@@ -6,7 +7,7 @@ const authMiddleware = require('../models/middlewares/auth.middleware');
 
 
 
-router.post('/register', [
+router.post('/register', loginLimit, [
     body('fullName.lastName').isString().isLength({ min: 3 }).withMessage('Last name must be at least 3 characters'),
     body('fullName.firstName')
         .isLength({ min: 3 })
@@ -20,7 +21,7 @@ router.post('/register', [
 ], userController.registerUser);
 
 router.post(
-  '/login',
+  '/login', loginLimit,
   [
     body('email').isEmail().withMessage('invalid email'),
     body('password').isLength({ min: 6 }).withMessage('password must be 6 digit')
@@ -28,8 +29,6 @@ router.post(
   userController.loginUser
 );
 
-console.log("✅ authMiddleware.authUser type:", typeof authMiddleware.authUser); 
-console.log("✅ userController.getUserProfile type:", typeof userController.getUserProfile);
 
 router.get('/profile', authMiddleware.authUser, userController.getUserProfile);
 

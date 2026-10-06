@@ -5,6 +5,21 @@ const mapService = require('../services/map.service');
 const { getFare } = require('../services/fare.util');
 const Ride = require('../models/ride.module');
 const rideService = require('../services/ride.service');
+const { captainRide, riderRide, rideOffer } = require('../services/ride.dto');
+
+test('DTO allow lists discard nested secrets and future schema fields', () => {
+  const ride = { _id: 'ride', status: 'accepted', pickup: 'A', destination: 'B', fare: 110, vehicleType: 'car',
+    Otp: 'fixture-otp', futurePrivateField: 'private', offeredCaptains: ['captain'],
+    user: { fullname: { firstname: 'Test', lastname: 'Rider', secret: 'private' }, email: 'private', password: 'private', Otp: 'private' },
+    captain: { fullname: { firstname: 'Test', lastname: 'Captain' }, email: 'private', vehicle: { plate: 'TEST', secret: 'private' } } };
+  const captain = captainRide(ride);
+  assert.deepEqual(Object.keys(captain).sort(), ['_id', 'destination', 'fare', 'pickup', 'status', 'user', 'vehicleType']);
+  assert.ok(!JSON.stringify(captain).includes('private'));
+  assert.ok(!JSON.stringify(captain).includes('fixture-otp'));
+  assert.equal(riderRide(ride).Otp, 'fixture-otp');
+  assert.ok(!JSON.stringify(riderRide(ride)).includes('private'));
+  assert.ok(!JSON.stringify(rideOffer(ride, ride.user)).includes('private'));
+});
 
 test('fare calculation returns a price for each vehicle type', async () => {
   const original = mapService.getDistanceTime;
@@ -51,8 +66,8 @@ test('confirm only accepts a pending ride', async () => {
     };
   };
   try {
-    await rideService.confirmRide({ rideId: 'ride-1', captain: 'captain-1' });
-    assert.deepEqual(filter, { _id: 'ride-1', status: 'pending' });
+    await rideService.confirmRide({ rideId: 'ride-1', captain: { _id: 'captain-1', vehicle: { vehicleType: 'car' } } });
+    assert.deepEqual(filter, { _id: 'ride-1', status: 'pending', offeredCaptains: 'captain-1', vehicleType: 'car' });
   } finally {
     Ride.findOneAndUpdate = original;
   }

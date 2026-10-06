@@ -2,7 +2,6 @@ const userModel = require('../models/user.model');
 const userservice = require('../services/user.service');
 const { validationResult } = require('express-validator');
 const blacklistTokenModel = require('../models/blacklistToken.model');
-console.log("✅ blacklistToken.model.js loaded successfully");
 
 
 
@@ -10,7 +9,7 @@ console.log("✅ blacklistToken.model.js loaded successfully");
 module.exports.registerUser = async (req, res, next) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        return res.status(400).json({ error: error.array() });
+        return res.status(400).json({ message: 'Please check the submitted details' });
     }
 
     const { email, password } = req.body;
@@ -42,10 +41,10 @@ module.exports.registerUser = async (req, res, next) => {
 
 
 module.exports.loginUser = async (req, res, next) =>{
-     
+
     const error = validationResult(req);
     if(!error.isEmpty()){
-        return res.status(400).json({error: error.array()});
+        return res.status(400).json({ message: 'Please check the submitted details' });
     }
 
       const{ email, password} = req.body;
@@ -100,7 +99,6 @@ module.exports.logoutUser = async (req, res, next) => {
 
     return res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
-    console.error('Logout Error:', error.message);
-    return res.status(500).json({ message: 'Logout failed', error: error.message });
+    return res.status(500).json({ message: 'Logout failed' });
   }
 };

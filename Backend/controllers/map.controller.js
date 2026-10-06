@@ -1,73 +1,17 @@
-const MapService = require('../services/map.service');
+const maps = require('../services/map.service');
 const { validationResult } = require('express-validator');
-
-module.exports.getCoordinates = async (req, res) => {
-    const { address } = req.query;
-    console.log("Received address:", address);
-
-    if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
-    }
-
+function handle(operation) {
+  return async (req, res) => {
+    if (!validationResult(req).isEmpty()) return res.status(400).json({ message: 'Invalid location input' });
     try {
-        const coordinates = await MapService.getAddressCoordinates(address);
-        if (!coordinates) {
-            return res.status(404).json({ error: 'Coordinates not found for the given address' });
-        }
-        res.json(coordinates);
-    } catch (error) {
-        console.error('Error fetching coordinates:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
+      const data = await operation(req.query);
+      if (data === null) return res.status(422).json({ message: 'Location or route not found' });
+      res.json(data);
+    } catch {
+      res.status(502).json({ message: 'Maps service unavailable. Please try again.' });
     }
-};
-
-
-module.exports.getDistanceTime = async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const { origin, destination } = req.query;
-        console.log("Origin:", origin, "Destination:", destination);
-
-        if (!origin || !destination) {
-            return res.status(400).json({ error: 'Origin and destination are required' });
-        }
-
-        const distanceTime = await MapService.getDistanceTime(origin, destination);
-        res.json(distanceTime);
-
-    } catch (error) {
-        console.error('Error fetching distance and time:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-
-module.exports.getAutoCompleteSuggestions = async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
-        const { input } = req.query;
-        console.log("Input for suggestions:", input);
-
-        if (!input) {
-            return res.status(400).json({ error: 'Input is required for autocomplete suggestions' });
-        }
-
-        const suggestions = await MapService.getAutoCompleteSuggestions(input);
-        console.log("Suggestions from API:", suggestions); // ✅ Moved inside try block
-        res.json({ suggestions });
-
-    } catch (error) {
-        console.error('Error fetching autocomplete suggestions:', error.message);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-console.log("✅ map.controller.js loaded");
+  };
+}
+exports.getCoordinates = handle(q => maps.getAddressCoordinates(q.address));
+exports.getDistanceTime = handle(q => maps.getDistanceTime(q.origin, q.destination));
+exports.getAutoCompleteSuggestions = handle(async q => ({ suggestions: await maps.getAutoCompleteSuggestions(q.input) }));

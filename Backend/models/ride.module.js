@@ -2,6 +2,7 @@
 
 
   const rideSchema = new mongoose.Schema({
+    offeredCaptains: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Captain', select: false }],
     user:{
            type: mongoose.Schema.Types.ObjectId,
            ref: 'user',
@@ -43,7 +44,7 @@
     duration:{
         type: Number,
     },
-    
+
     distance:{
         type: Number,
     },

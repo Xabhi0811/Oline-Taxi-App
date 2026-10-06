@@ -29,8 +29,7 @@ const CaptainProtectWrapper = ({ children }) => {
           navigate('/captain-login');
         }
       })
-      .catch(error => {
-        console.error('❌ Error fetching captain profile:', error);
+      .catch(() => {
         localStorage.removeItem('captainToken');
         navigate('/captain-login');
       })

@@ -10,13 +10,13 @@ module.exports.registerCaptain = async (req, res) => {
 
     const errors = validationResult(req);
 if (!errors.isEmpty()) {
-  return res.status(400).json({ errors: errors.array() });
+  return res.status(400).json({ message: 'Please check the submitted details' });
 }
 
 
      const error = validationResult(req);
      if (!error.isEmpty()) {
-         return res.status(400).json({ errors: error.array() });
+         return res.status(400).json({ message: 'Please check the submitted details' });
      }
      const { fullname, email, password, vehicle } = req.body;
      const isCaptainExists = await captainModel.findOne({ email});
@@ -48,29 +48,24 @@ if (!errors.isEmpty()) {
 
 }
 module.exports.loginCaptain = async (req, res) => {
-    console.log("✅ captain login route hit");
-    
+
     const error = validationResult(req);
     if (!error.isEmpty()) {
-        return res.status(400).json({ errors: error.array() });
+        return res.status(400).json({ message: 'Please check the submitted details' });
     }
 
     const { email, password } = req.body;
-    console.log("📩 Login attempt for:", email);
 
     const captain = await captainModel.findOne({ email }).select('+password');
 
     if (!captain) {
-        console.log("❌ Captain not found");
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    console.log("🔐 Found captain. Checking password...");
 
     const isMatch = await captain.comparePassword(password);
 
     if (!isMatch) {
-        console.log("❌ Password mismatch");
         return res.status(401).json({ message: 'Invalid email or password' });
     }
 

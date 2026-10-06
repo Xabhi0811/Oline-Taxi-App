@@ -1,13 +1,12 @@
 import React from 'react'
 
 const RidePopUp = (props) => {
-  console.log("RidePopUp props.ride.user:", props.ride?.user);
 
   return (
     <div>
       <h5 className='p-1 text-center w-[93%] absolute top-0'onClick={()=>{
         props.setRidePopUpPanel(false)
-       
+
        }}><i className=" text-3xl text-gray-200 ri-arrow-down-s-line"></i></h5>
        <h3 className='text-xl font-semibold mb-5 '> New Ride Available ! </h3>
        <div className=" flex items-center justify-between mt-4 p-3 bg-yellow-400 rounded-lg ">
@@ -20,7 +19,7 @@ const RidePopUp = (props) => {
         </div>
         <h5 className='text-lg font-semibold'>2.2 Km</h5>
        </div>
-      
+
       <div className='flex gap-2 justify-between flex-col items-center'>
 
           <div className=" w-full mt-5 ">
@@ -46,14 +45,14 @@ const RidePopUp = (props) => {
                 </div>
             </div>
           </div>
-          
+
           <div className='mt-5 flex w-full  justify-between  items-center'>
             <button  onClick={()=>{
             props.ConfrimRide()
           }}
-        
+
            className='  bg-green-600 text-white font-semibold p-4 px-10  rounded-xl'>Accept</button>
-          
+
 
           <button onClick={()=>{
             props.setRidePopUpPanel(false)

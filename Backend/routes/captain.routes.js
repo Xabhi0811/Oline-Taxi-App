@@ -1,3 +1,4 @@
+const { loginLimit } = require('../middlewares/rate-limit');
  const captainController = require('../controllers/captain.controller');
 const express = require('express');
  const router = express.Router();
@@ -7,7 +8,7 @@ const express = require('express');
 
 
 
- router.post('/register', [
+ router.post('/register', loginLimit, [
     body('fullname.firstname').isLength({min: 3}).withMessage('First name must be at least 3 characters long'),
     body('fullname.lastname').optional().isLength({min: 3}).withMessage('Last name must be at least 3 characters long'),
     body('email').isEmail().withMessage('Please fill a valid email address'),
@@ -20,9 +21,8 @@ const express = require('express');
    captainController.registerCaptain
 
  )
-console.log("✅ captain.routes.js loaded");
 
- router.post('/login',[
+ router.post('/login', loginLimit,[
   body('email').isEmail().withMessage('invalid email address'),
   body('password').isLength({min: 6}).withMessage('Password must be at least 6 characters long')
  ],

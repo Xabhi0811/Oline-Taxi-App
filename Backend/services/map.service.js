@@ -1,108 +1,50 @@
 const axios = require('axios');
-require('dotenv').config(); // To use environment variables from .env
-const captainModel = require('../models/captain.module')
- // ✅ adjust the path as needed
-
-
-module.exports.getAddressCoordinates = async (address) => {
-    try {
-        const apiKey = process.env.GOOGLE_MAPS_API; // Add your key in a .env file
-        const encodedAddress = encodeURIComponent(address)
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`
-
-        const response = await axios.get(url);
-        const data = response.data;
-
-        if (data.status !== 'OK') {
-            throw new Error(`Geocoding error: ${data.status}`);
-        }
-
-        const location = data.results[0].geometry.location;
-        return {
-            lat: location.lat,
-            lng: location.lng
-        };
-    } catch (error) {
-        console.error('Error fetching coordinates:', error.message);
-        return null;
-    }
-};
-
-module.exports.getDistanceTime = async (origin, destination) => {
-  if (!origin || !destination) {
-    throw new Error("Origin and destination are required");
-  }
-
-  const apiKey = process.env.GOOGLE_MAPS_API;
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
-
+const Captain = require('../models/captain.module');
+async function request(endpoint, params) {
   try {
-    const response = await axios.get(url);
-    const data = response.data;
-
-    console.log("📦 Google API response:", JSON.stringify(data, null, 2));
-
-    const element = data?.rows?.[0]?.elements?.[0];
-
-    // ✅ Handle ZERO_RESULTS gracefully
-    if (data.status === 'OK') {
-      if (element?.status === 'OK') {
-        return {
-          distance: element.distance,
-          duration: element.duration
-        };
-      } else if (element?.status === 'ZERO_RESULTS') {
-        console.warn("⚠️ No route found between origin and destination.");
-        return null; // Signal that no route could be found
-      }
-    }
-
-    console.error("❌ API status issue:", element?.status, data.status);
-    throw new Error(`Google Maps API failed: ${element?.status || 'Invalid response'}`);
-
-  } catch (error) {
-    console.error("🚨 Google Maps API error:", error.message);
-    throw error;
+    const { data } = await axios.get('https://maps.googleapis.com/maps/api/' + endpoint + '/json', {
+      params: { ...params, key: process.env.GOOGLE_MAPS_API },
+      timeout: 5000, signal: AbortSignal.timeout(6000),
+      maxContentLength: 1024 * 1024, maxRedirects: 0,
+    });
+    if (!data || !['OK', 'ZERO_RESULTS'].includes(data.status)) throw new Error();
+    return data;
+  } catch {
+    // Axios errors contain credentials and locations; never expose their config.
+    throw new Error('Maps service unavailable');
   }
+}
+exports.getAddressCoordinates = async address => {
+  const data = await request('geocode', { address });
+  if (data.status === 'ZERO_RESULTS') return null;
+  const loc = data.results?.[0]?.geometry?.location;
+  if (!Number.isFinite(loc?.lat) || Math.abs(loc.lat) > 90 ||
+      !Number.isFinite(loc?.lng) || Math.abs(loc.lng) > 180) throw new Error('Invalid Maps coordinates');
+  return { lat: loc.lat, lng: loc.lng };
 };
-
-
-    module.exports.getAutoCompleteSuggestions = async (input) => {
-         if(!input){
-            throw new Error('Input is required for autocomplete suggestions');
-         }
-        const apiKey = process.env.GOOGLE_MAPS_API; // Add your key in a .env file
-        const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`;
-    try {
-            const response = await axios.get(url);
-            const data = response.data;
-
-            if (data.status !== 'OK') {
-                throw new Error(`Autocomplete error: ${data.status}`);
-            }
-
-            return data.predictions.map(prediction => ({
-                description: prediction.description,
-                place_id: prediction.place_id
-            }));
-        } catch (error) {
-            console.error('Error fetching autocomplete suggestions:', error.message);
-            throw error;
-        }
-    }
-
-
-    module.exports.getCaptainInTheRadius = async (lat , lng , radius) =>{
-
-
-      const captains = await captainModel.find({
-        location :{
-          $geoWithin:{
-            $centerSphere: [[lng, lat] , radius/6371]
-          }
-        }
-      })
-      console.log("🔍 Captains in radius:", captains.map(c => ({ id: c._id, socketId: c.socketId })));
-
-      return captains
-    }
+exports.getDistanceTime = async (origin, destination) => {
+  const data = await request('distancematrix', { origins: origin, destinations: destination });
+  const el = data.rows?.[0]?.elements?.[0];
+  if (data.status === 'ZERO_RESULTS' || el?.status === 'ZERO_RESULTS') return null;
+  if (el?.status !== 'OK' || !Number.isFinite(el.distance?.value) || el.distance.value < 0 ||
+      !Number.isFinite(el.duration?.value) || el.duration.value < 0) throw new Error('Invalid Maps route');
+  return { distance: { value: el.distance.value }, duration: { value: el.duration.value } };
+};
+exports.getAutoCompleteSuggestions = async input => {
+  const data = await request('place/autocomplete', { input });
+  if (data.status === 'ZERO_RESULTS') return [];
+  if (!Array.isArray(data.predictions) || data.predictions.some(p =>
+    typeof p?.description !== 'string' || typeof p?.place_id !== 'string')) throw new Error('Invalid Maps suggestions');
+  return data.predictions.slice(0, 10).map(({ description, place_id }) => ({ description, place_id }));
+};
+// Offers require a connected captain, a location reported within five minutes,
+// proximity to pickup, and no accepted/ongoing ride at offer time.
+exports.getCaptainInTheRadius = async (lat, lng, radius) => {
+  const Ride = require('../models/ride.module');
+  const busy = await Ride.distinct('captain', { status: { $in: ['accepted', 'ongoing'] } });
+  return Captain.find({
+    _id: { $nin: busy }, socketId: { $ne: null },
+    locationUpdatedAt: { $gte: new Date(Date.now() - 5 * 60 * 1000) },
+    location: { $geoWithin: { $centerSphere: [[lng, lat], radius / 6371] } },
+  }).select('_id socketId vehicle');
+};

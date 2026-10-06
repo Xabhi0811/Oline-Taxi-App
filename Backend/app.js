@@ -1,15 +1,13 @@
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ quiet: true });
 const express = require('express')
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const connectToDb = require('./db/db');
 const userRoutes = require('./routes/user.routes');
 const captainRoutes= require('./routes/captain.routes');
 const mapRoutes = require('./routes/map.routes');
 const rideRoutes = require('./routes/ride.routes')
-connectToDb()
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -29,8 +27,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true}));
+app.use(express.json({ limit: '16kb' }));
+app.use(express.urlencoded({ extended: false, limit: '16kb' }));
 app.use(cookieParser());
 
 
@@ -57,4 +55,4 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Unable to process the request. Please try again.' });
 });
 
-module.exports = app; 
+module.exports = app;

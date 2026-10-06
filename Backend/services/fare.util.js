@@ -1,9 +1,7 @@
 
-  const rideModule = require('../models/ride.module');
-const MapService = require('../services/map.service'); 
-  
+const MapService = require('../services/map.service');
+
   module.exports.getFare = async function getFare(pickup, destination) {
-  console.log("🚗 getFare called with:", pickup, destination);
 
   if (!pickup || !destination) {
     throw new Error('Pickup and destination are required');
@@ -16,7 +14,6 @@ const MapService = require('../services/map.service');
     throw new Error("No route found between pickup and destination.");
   }
 
-  console.log("📏 distanceTime:", distanceTime);
 
   const baseFare = {
     auto: 20,
@@ -42,7 +39,6 @@ const MapService = require('../services/map.service');
     bike: baseFare.bike + Math.round((distanceTime.distance.value / 1000) * perKmRate.bike) + ((distanceTime.duration.value / 60) * perMinuteRate.bike),
   };
 
-  console.log("💰 Fare calculated:", fare);
   return fare;
 };
 

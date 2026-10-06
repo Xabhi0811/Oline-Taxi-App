@@ -36,7 +36,7 @@ function initializeSocket(server) {
       }
       try {
         await captainModel.updateOne({ _id: id }, {
-          $set: { location: { type: 'Point', coordinates: [location.lng, location.lat] } }
+          $set: { location: { type: 'Point', coordinates: [location.lng, location.lat] }, locationUpdatedAt: new Date() }
         });
         acknowledge({ ok: true });
       } catch {
